@@ -35,10 +35,15 @@ module mainmips(
     
     );
     
+	//IF模块的输出，连接到IF/ID模块
+    wire            if_is_16op;
+	
     // IF/ID模块的输出，连接到ID模块的输入
 	wire[`InstAddrBus] pc;
 	wire[`InstAddrBus] id_pc_i;
 	wire[`InstBus] id_inst_i;
+	wire           id_is_16op_i;
+
 	
 	// ID模块输出，连接到ID/EX模块的输入
 	wire[`AluOpBus] id_aluop_o;
@@ -47,22 +52,37 @@ module mainmips(
 	wire id_wreg_o;
 	wire[`RegAddrBus] id_wd_o;
 	
+	//ID模块输出，连接到IF模块的输入
+	wire       branch_flag_o;
+	wire[`InstAddrBus] branch_op_o;
+	wire               id_mem_en_o;
+    wire               id_mem_wr_o;
+    wire               id_is_16op_o;
+	
 	// ID/EX模块输出，连接到EX模块的输入
 	wire[`AluOpBus] ex_aluop_i;
 	wire[`RegBus] ex_reg1_i;
 	wire[`RegBus] ex_reg2_i;
 	wire ex_wreg_i;
 	wire[`RegAddrBus] ex_wd_i;
+	wire           ex_mem_en_i;
+	wire           ex_mem_wr_i;
 	
 	// EX模块的输出，连接到EX/MEM模块的输入
 	wire ex_wreg_o;
 	wire[`RegAddrBus] ex_wd_o;
 	wire[`RegBus] ex_wdata_o;
+	wire           ex_mem_en_o;
+	wire           ex_mem_wr_o;
+	wire[`InstAddrBus] ex_mem_addr_o;
 
 	// EX/MEM模块的输出，连接到MEM模块的输入
 	wire mem_wreg_i;
 	wire[`RegAddrBus] mem_wd_i;
 	wire[`RegBus] mem_wdata_i;
+	wire           mem_en_i;
+	wire           mem_wr_i;
+	wire[`InstAddrBus]   mem_addr_i;
 
 	// MEM模块的输出，连接到MEM/WB模块的输入
 	wire mem_wreg_o;
@@ -81,7 +101,8 @@ module mainmips(
     wire[`RegBus] reg2_data;
     wire[`RegAddrBus] reg1_addr;
     wire[`RegAddrBus] reg2_addr;
-    
+	assign ins_addr_o = pc;
+	
     //流水线暂停控制
     wire stallreq_id;
     wire stallreq_ex;
@@ -101,8 +122,11 @@ module mainmips(
 		.clk(clk),
 		.rst(rst),
 		.pc(pc),
-		.ce(rom_ce_o)	
-			
+		.branch_flag(branch_flag_o),
+		.pc_branch(branch_op_o),
+		.ce(rom_ce_o),
+		.is_16op_i(id_is_16op_o),
+		.is_16op_o(if_is_16op)	
 	);
 	
   assign rom_addr_o = pc;
@@ -115,7 +139,9 @@ module mainmips(
 		.if_inst(rom_data_i),
 		.id_pc(id_pc_i),
 		.id_inst(id_inst_i),
-        .stall(stall)
+        .stall(stall),
+		.is_16op_i(if_is_16op),
+		.is_16op_o(id_is_16op_i)
  	
 	);
 	
@@ -127,7 +153,11 @@ module mainmips(
 
 		.reg1_data_i(reg1_data),
 		.reg2_data_i(reg2_data),
-
+		.is_16op_i(id_is_16op_i),
+		//送到IF段的输出
+		.branch_flag(branch_flag_o),
+		.branch_op(branch_op_o),
+		.is_16op(id_is_16op_o),
 		// 来自REGFILE的数据输入
 		.reg1_read_o(reg1_read),
 		.reg2_read_o(reg2_read), 	  
@@ -142,6 +172,8 @@ module mainmips(
 		.reg2_o(id_reg2_o),
 		.wd_o(id_wd_o),
 		.wreg_o(id_wreg_o),
+		.mem_en_o(id_mem_en_o),
+		.mem_wr_o(id_mem_wr_o),
 		.stallreq(stallreq_id)
 	);
 
@@ -172,6 +204,8 @@ module mainmips(
 		.id_reg2(id_reg2_o),
 		.id_wd(id_wd_o),
 		.id_wreg(id_wreg_o),
+		.id_mem_en(id_mem_en_o),
+		.id_mem_wr(id_mem_wr_o),
 	
 		// 要送到EX阶段的数据
 		.ex_aluop(ex_aluop_i),
@@ -180,6 +214,8 @@ module mainmips(
 		.ex_reg2(ex_reg2_i),
 		.ex_wd(ex_wd_i),
 		.ex_wreg(ex_wreg_i),
+		.ex_mem_en(ex_mem_en_i),
+		.ex_mem_wr(ex_mem_wr_i),
 		.stall(stall)
 	);		
 	
@@ -194,12 +230,17 @@ module mainmips(
 		.reg2_i(ex_reg2_i),
 		.wd_i(ex_wd_i),
 		.wreg_i(ex_wreg_i),
+		.mem_en_i(ex_mem_en_i),
+		.mem_wr_i(ex_mem_wr_i),
 	  
 	  // EX阶段的结果，输出到EX/MEM的数据
 		.wd_o(ex_wd_o),
 		.wreg_o(ex_wreg_o),
 		.wdata_o(ex_wdata_o),
-		.stallreq(stallreq_ex)
+		.stallreq(stallreq_ex),
+		.mem_en_o(ex_mem_en_o),
+		.mem_wr_o(ex_mem_wr_o),
+		.mem_addr_o(ex_mem_addr_o)
 	);
 
   // EX/MEM的实例化
@@ -211,13 +252,17 @@ module mainmips(
 		.ex_wd(ex_wd_o),
 		.ex_wreg(ex_wreg_o),
 		.ex_wdata(ex_wdata_o),
-	
+	    .ex_mem_en(ex_mem_en_o),
+	    .ex_mem_wr(ex_mem_wr_o),
+	    .ex_mem_addr(ex_mem_addr_o),
 
 		// 将要送到MEM阶段的数据
 		.mem_wd(mem_wd_i),
 		.mem_wreg(mem_wreg_i),
 		.mem_wdata(mem_wdata_i),
-        
+        .mem_en(mem_en_i),
+        .mem_wr(mem_wr_i),
+        .mem_addr(mem_addr_i),
         .stall(stall)
 						       	
 	);
@@ -230,6 +275,18 @@ module mainmips(
 		.wd_i(mem_wd_i),
 		.wreg_i(mem_wreg_i),
 		.wdata_i(mem_wdata_i),
+		.mem_en_i(mem_en_i),
+		.mem_wr_i(mem_wr_i),
+		.mem_addr_i(mem_addr_i),
+		
+	    //接受数据存储器的数据
+	    .mem_read_data(ram_data_i),
+	  
+	  //送到数据存储器
+        .mem_en(ram_ce),
+        .mem_wr(ram_we),
+        .mem_addr(ram_addr_o),	  
+	    .mem_write_data(ram_data_o),
 	  
 		// 要送到MEM/WB模块的数据
 		.wd_o(mem_wd_o),
