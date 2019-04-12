@@ -27,12 +27,12 @@ module mem_wb(
     input wire[5:0]               stall,
 
 
-	// æ¥è‡ªè®¿å­˜é˜¶æ®µçš„ä¿¡æ¯
+	// À´×Ô·Ã´æ½×¶ÎµÄĞÅÏ¢
 	input wire[`RegAddrBus]       mem_wd,
 	input wire                    mem_wreg,
     input wire[`RegBus]			  mem_wdata,
 
-	// éœ€è¦ä¼ é€’ç»™å†™å›é˜¶æ®µçš„ä¿¡æ¯
+	// ĞèÒª´«µİ¸øĞ´»Ø½×¶ÎµÄĞÅÏ¢
     output reg[`RegAddrBus]       wb_wd,
 	output reg                    wb_wreg,
     output reg[`RegBus]			  wb_wdata	       
@@ -40,7 +40,7 @@ module mem_wb(
 );
 
 
-    // å¦‚æœé‡ç½®çš„è¯ï¼Œæ¸…é™¤ä¿¡æ¯ï¼Œå¦åˆ™ä¼ é€’ç»™å†™å›é˜¶æ®µ
+    // Èç¹ûÖØÖÃµÄ»°£¬Çå³ıĞÅÏ¢£¬·ñÔò´«µİ¸øĞ´»Ø½×¶Î
 	always @ (posedge clk) begin
 		if(rst == `RstEnable) begin
 			wb_wd <= `NOPRegAddr;

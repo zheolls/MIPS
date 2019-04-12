@@ -26,24 +26,24 @@ module ex_mem(
     input wire[5:0]              stall,
 
 	
-	// æ¥è‡ªæ‰§è¡Œé˜¶æ®µçš„ä¿¡æ¯
+	// À´×ÔÖ´ĞĞ½×¶ÎµÄĞÅÏ¢
 	input wire[`RegAddrBus]       ex_wd,
 	input wire                    ex_wreg,
     input wire[`RegBus]		      ex_wdata, 	
 	
-	// é€åˆ°è®¿å­˜é˜¶æ®µçš„ä¿¡æ¯
+	// ËÍµ½·Ã´æ½×¶ÎµÄĞÅÏ¢
     output reg[`RegAddrBus]       mem_wd,
 	output reg                    mem_wreg,
     output reg[`RegBus]			  mem_wdata
     );
-        // æ—¶åºé€»è¾‘
+        // Ê±ĞòÂß¼­
 	always @ (posedge clk) begin
-        // å¦‚æœé‡ç½®çš„è¯ï¼Œæ¸…é™¤ä¿¡æ¯
+        // Èç¹ûÖØÖÃµÄ»°£¬Çå³ıĞÅÏ¢
 		if(rst == `RstEnable) begin
 			mem_wd <= `NOPRegAddr;
 			mem_wreg <= `WriteDisable;
 		    mem_wdata <= `ZeroWord;	
-            // ä¸é‡ç½®çš„è¯ï¼ŒæŠŠä¿¡æ¯ä¼ é€’åˆ°MEMé˜¶æ®µ
+            // ²»ÖØÖÃµÄ»°£¬°ÑĞÅÏ¢´«µİµ½MEM½×¶Î
 		end else if (stall[3] == `Stop && stall[4] == `NoStop ) begin
 		    mem_wd <= `NOPRegAddr;
 			mem_wreg <= `WriteDisable;

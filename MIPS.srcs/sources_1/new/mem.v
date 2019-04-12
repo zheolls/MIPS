@@ -23,23 +23,23 @@
 module mem(
 	input wire					  rst,
 	
-	// æ¥è‡ªæ‰§è¡Œé˜¶æ®µçš„æ¶ˆæ¯
+	// À´×ÔÖ´ĞĞ½×¶ÎµÄÏûÏ¢
 	input wire[`RegAddrBus]       wd_i,
 	input wire                    wreg_i,
     input wire[`RegBus]			  wdata_i,
 	
-	// è®¿å­˜é˜¶æ®µçš„ç»“æœ
+	// ·Ã´æ½×¶ÎµÄ½á¹û
     output reg[`RegAddrBus]       wd_o,
 	output reg                    wreg_o,
     output reg[`RegBus]			  wdata_o
     );
-    	// å¦‚æœé‡ç½®åˆ™æ¸…é™¤ç»“æœ
+    	// Èç¹ûÖØÖÃÔòÇå³ı½á¹û
 	always @ (*) begin
 		if(rst == `RstEnable) begin
 			wd_o <= `NOPRegAddr;
 			wreg_o <= `WriteDisable;
 		  	wdata_o <= `ZeroWord;
-            // å¦åˆ™å› ä¸ºORIåœ¨æ­¤é˜¶æ®µä¸éœ€è¦åšä»»ä½•äº‹æƒ…ï¼Œæ‰€ä»¥ç›´æ¥é€ç»™ä¸‹ä¸ªé˜¶æ®µï¼ˆWBï¼‰
+            // ·ñÔòÒòÎªORIÔÚ´Ë½×¶Î²»ĞèÒª×öÈÎºÎÊÂÇé£¬ËùÒÔÖ±½ÓËÍ¸øÏÂ¸ö½×¶Î£¨WB£©
 		end else begin
 		  	wd_o <= wd_i;
 			wreg_o <= wreg_i;

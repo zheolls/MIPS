@@ -29,7 +29,7 @@ module if_id(
     output reg[`InstAddrBus] id_pc,
     output reg[`InstBus] id_inst
     );
-        // å¦‚æœå¤ä½çš„è¯ï¼Œä¼ é€’ç»™ä¸‹ä¸€ä¸ªé˜¶æ®µçš„æ•°æ®è¦æ¸…é›¶
+        // Èç¹û¸´Î»µÄ»°£¬´«µİ¸øÏÂÒ»¸ö½×¶ÎµÄÊı¾İÒªÇåÁã
 	always @ (posedge clk) begin
         if (rst == `RstEnable) begin
             id_pc <= `ZeroWord;

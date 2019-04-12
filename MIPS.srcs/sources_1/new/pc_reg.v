@@ -27,7 +27,7 @@ module pc_reg(
     output reg[`InstAddrBus] pc,
     output reg ce
     );
-        // æŒ‡ä»¤å­˜å‚¨å™¨ç¦ç”¨çš„æ—¶å€™ PCå€¼éœ€è¦å½’é›¶
+        // Ö¸Áî´æ´¢Æ÷½ûÓÃµÄÊ±ºò PCÖµĞèÒª¹éÁã
 	always @ (posedge clk) begin
         if (ce == `ChipDisable) begin
 			pc <= 8'h00000000;
@@ -36,7 +36,7 @@ module pc_reg(
 		end
 	end
 	
-    // å¤ä½çš„æ—¶å€™éœ€è¦ç¦ç”¨æŒ‡ä»¤å­˜å‚¨å™¨
+    // ¸´Î»µÄÊ±ºòĞèÒª½ûÓÃÖ¸Áî´æ´¢Æ÷
 	always @ (posedge clk) begin
 		if (rst == `RstEnable) begin
             ce <= `ChipDisable;

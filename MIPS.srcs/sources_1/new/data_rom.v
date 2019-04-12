@@ -29,7 +29,7 @@ module data_ram(
     output reg[`DataBus] data_o
     );
     reg[`ByteWidth] data_mem[0:`DataMemNum-1];
-    //å†™æ“ä½œ
+    //Ğ´²Ù×÷
     always @ (posedge clk) begin
         if (ce==`ChipDisable) begin
             data_o<=`ZeroWord;
@@ -38,7 +38,7 @@ module data_ram(
         end
     end
     
-    //è¯»æ“ä½œ
+    //¶Á²Ù×÷
     always @ (*) begin
         if (ce==`ChipDisable) begin
             data_o<=`ZeroWord;

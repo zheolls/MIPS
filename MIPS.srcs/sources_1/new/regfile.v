@@ -22,67 +22,67 @@
 
 
 module regfile(
-	// å†™ç«¯å£
+	// Ğ´¶Ë¿Ú
 	input wire					 we,
     input wire[`RegAddrBus]		 waddr,
     input wire[`RegBus]			 wdata,
 	
-	// è¯»ç«¯å£ 1
+	// ¶Á¶Ë¿Ú 1
 	input wire					 re1,
     input wire[`RegAddrBus]		 raddr1,
     output reg[`RegBus]          rdata1,
 	
-	// è¯»ç«¯å£ 2
+	// ¶Á¶Ë¿Ú 2
 	input wire					 re2,
     input wire[`RegAddrBus]		 raddr2,
     output reg[`RegBus]          rdata2,
     input rst,
     input clk
     );
-        // å®šä¹‰8ä¸ª8ä½å¯„å­˜å™¨
+        // ¶¨Òå8¸ö8Î»¼Ä´æÆ÷
     reg[`RegBus]  regs[0:`RegNum-1];
 
-    // å†™æ“ä½œ
+    // Ğ´²Ù×÷
 	always @ (posedge clk) begin
 		if (rst == `RstDisable) begin
-            // å¦‚æœ å†™ä½¿èƒ½ è€Œä¸” æˆ‘ä»¬æ²¡æœ‰å‘0å·å¯„å­˜å™¨å†™å…¥ä¸œè¥¿çš„æ—¶å€™ï¼Œæˆ‘ä»¬æ‰å‘å¯„å­˜å™¨é‡Œé¢å†™å…¥
-            // å› ä¸º 0 å·å¯„å­˜å™¨åªè¯»è€Œä¸”æ°¸è¿œè¯»å‡º 32'h0
+            // Èç¹û Ğ´Ê¹ÄÜ ¶øÇÒ ÎÒÃÇÃ»ÓĞÏò0ºÅ¼Ä´æÆ÷Ğ´Èë¶«Î÷µÄÊ±ºò£¬ÎÒÃÇ²ÅÏò¼Ä´æÆ÷ÀïÃæĞ´Èë
+            // ÒòÎª 0 ºÅ¼Ä´æÆ÷Ö»¶Á¶øÇÒÓÀÔ¶¶Á³ö 32'h0
             if((we == `WriteEnable) && (waddr != `RegNum'h0)) begin
 				regs[waddr] <= wdata;
 			end
 		end
 	end
-	    // è¯»ç«¯å£1 çš„è¯»æ“ä½œ
+	    // ¶Á¶Ë¿Ú1 µÄ¶Á²Ù×÷
 	always @ (*) begin
-       // å¦‚æœé‡ç½®åˆ™è¯»å‡º 32'h0
+       // Èç¹ûÖØÖÃÔò¶Á³ö 32'h0
 	  if(rst == `RstEnable) begin
           rdata1 <= `ZeroWord;
-       // å¦‚æœè¯»0å·å¯„å­˜å™¨ï¼Œä¹Ÿåªè¯»å‡º0
+       // Èç¹û¶Á0ºÅ¼Ä´æÆ÷£¬Ò²Ö»¶Á³ö0
 	  end else if(raddr1 == `RegNum'h0) begin
           rdata1 <= `ZeroWord;
-       // å½“è¯»åœ°å€ä¸å†™åœ°å€ç›¸åŒï¼Œä¸”å†™ä½¿èƒ½ï¼Œä¸”ç«¯å£1è¯»ä½¿èƒ½ï¼Œåˆ™è¦æŠŠå†™å…¥çš„æ•°æ®ç›´æ¥è¯»å‡ºæ¥
-       //   æ•°æ®å‰æ¨çš„å®ç°ï¼Œåé¢ä¼šæåŠ
+       // µ±¶ÁµØÖ·ÓëĞ´µØÖ·ÏàÍ¬£¬ÇÒĞ´Ê¹ÄÜ£¬ÇÒ¶Ë¿Ú1¶ÁÊ¹ÄÜ£¬ÔòÒª°ÑĞ´ÈëµÄÊı¾İÖ±½Ó¶Á³öÀ´
+       //   Êı¾İÇ°ÍÆµÄÊµÏÖ£¬ºóÃæ»áÌá¼°
 	  end else if((raddr1 == waddr) && (we == `WriteEnable) 
-            && (re1 == `ReadEnable)) begin // æ³¨æ„æ­¤éƒ¨åˆ†ï¼ç†è§£ï¼
+            && (re1 == `ReadEnable)) begin // ×¢Òâ´Ë²¿·Ö£¡Àí½â£¡
 	  	  rdata1 <= wdata;
-       // å¦åˆ™è¯»å–ç›¸åº”å¯„å­˜å™¨å•å…ƒ
+       // ·ñÔò¶ÁÈ¡ÏàÓ¦¼Ä´æÆ÷µ¥Ôª
 	  end else if(re1 == `ReadEnable) begin
 	      rdata1 <= regs[raddr1];
-       // å¦‚æœç¬¬ä¸€ä¸ªè¯»ç«¯å£ä¸èƒ½ä½¿ç”¨æ—¶ï¼Œè¾“å‡º0
+       // Èç¹ûµÚÒ»¸ö¶Á¶Ë¿Ú²»ÄÜÊ¹ÓÃÊ±£¬Êä³ö0
 	  end else begin
 	      rdata1 <= `ZeroWord;
 	  end
 	end
 
-    // è¯»ç«¯å£2 çš„è¯»æ“ä½œ
-    // å’Œè¯»ç«¯å£1 ç±»ä¼¼
+    // ¶Á¶Ë¿Ú2 µÄ¶Á²Ù×÷
+    // ºÍ¶Á¶Ë¿Ú1 ÀàËÆ
 	always @ (*) begin
 		if(rst == `RstEnable) begin
             rdata2 <= `ZeroWord;
 	  end else if(raddr2 == `RegNum'h0) begin
 	  		rdata2 <= `ZeroWord;
 	  end else if((raddr2 == waddr) && (we == `WriteEnable) 
-                  && (re2 == `ReadEnable)) begin // æ³¨æ„æ­¤éƒ¨åˆ†ï¼ç†è§£ï¼
+                  && (re2 == `ReadEnable)) begin // ×¢Òâ´Ë²¿·Ö£¡Àí½â£¡
 	  	  rdata2 <= wdata;
 	  end else if(re2 == `ReadEnable) begin
 	      rdata2 <= regs[raddr2];
