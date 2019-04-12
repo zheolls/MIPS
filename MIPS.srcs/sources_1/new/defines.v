@@ -28,7 +28,7 @@
 `define RegAddrBus 7:0
 `define RegBus 7:0
 `define RegNum 4
-//Á÷Ë®ÏßÔİÍ£
+//æµæ°´çº¿æš‚åœ
 `define Stop 1
 `define NoStop 0
 

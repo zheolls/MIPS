@@ -26,21 +26,21 @@ module id_ex(
     
     input wire[5:0]             stall,
 	
-	// ´ÓID½×¶Î´«µİ¹ıÀ´µÄĞÅÏ¢
+	// ä»IDé˜¶æ®µä¼ é€’è¿‡æ¥çš„ä¿¡æ¯
 	input wire[`AluOpBus]         id_aluop,
 	input wire[`RegBus]           id_reg1,
 	input wire[`RegBus]           id_reg2,
 	input wire[`RegAddrBus]       id_wd,
 	input wire                    id_wreg,	
 	
-	// ĞèÒª´«µİµ½EX½×¶ÎµÄĞÅÏ¢
+	// éœ€è¦ä¼ é€’åˆ°EXé˜¶æ®µçš„ä¿¡æ¯
 	output reg[`AluOpBus]         ex_aluop,
 	output reg[`RegBus]           ex_reg1,
 	output reg[`RegBus]           ex_reg2,
 	output reg[`RegAddrBus]       ex_wd,
 	output reg                    ex_wreg
     );
-        // Èç¹ûÖØÖÃµÄ»°£¬½øĞĞÒÔÏÂ²Ù×÷Çå¿ÕĞÅÏ¢
+        // å¦‚æœé‡ç½®çš„è¯ï¼Œè¿›è¡Œä»¥ä¸‹æ“ä½œæ¸…ç©ºä¿¡æ¯
 	always @ (posedge clk) begin
 		if (rst == `RstEnable) begin
 			ex_aluop <= `EXE_NOP_OP;
@@ -48,7 +48,7 @@ module id_ex(
 			ex_reg2 <= `ZeroWord;
 			ex_wd <= `NOPRegAddr;
 			ex_wreg <= `WriteDisable;
-            // Èç¹û²»ÖØÖÃµÄ»°£¬°ÑID½×¶ÎµÄ½á¹ûËÍµ½EX½×¶Î
+            // å¦‚æœä¸é‡ç½®çš„è¯ï¼ŒæŠŠIDé˜¶æ®µçš„ç»“æœé€åˆ°EXé˜¶æ®µ
 		end else if (stall[2] == `Stop && stall[3] == `NoStop ) begin		
 		    ex_aluop <= `EXE_NOP_OP;
 			ex_reg1 <= `ZeroWord;
