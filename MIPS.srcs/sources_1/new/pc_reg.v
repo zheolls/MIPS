@@ -30,7 +30,7 @@ module pc_reg(
 	output reg is_16op_o
 
     );
-        // Ö¸Áî´æ´¢Æ÷½ûÓÃµÄÊ±ºò PCÖµĞèÒª¹éÁã
+        // æŒ‡ä»¤å­˜å‚¨å™¨ç¦ç”¨çš„æ—¶å€™ PCå€¼éœ€è¦å½’é›¶
 	always @ (posedge clk) begin
         if (ce == `ChipDisable) begin
 			pc <= 8'h00000000;
@@ -46,7 +46,7 @@ module pc_reg(
 		end
 	end
 	
-    // ¸´Î»µÄÊ±ºòĞèÒª½ûÓÃÖ¸Áî´æ´¢Æ÷
+    // å¤ä½çš„æ—¶å€™éœ€è¦ç¦ç”¨æŒ‡ä»¤å­˜å‚¨å™¨
 	always @ (posedge clk) begin
 		if (rst == `RstEnable) begin
             ce <= `ChipDisable;

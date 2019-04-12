@@ -25,47 +25,47 @@ module id(
     input wire[`InstAddrBus]	  pc_i,
 	input wire[`InstBus]          inst_i,
 
-    // ¶ÁÈ¡µÄREGFILEµÄÖµ
+    // è¯»å–çš„REGFILEçš„å€¼
 	input wire[`RegBus]           reg1_data_i,
 	input wire[`RegBus]           reg2_data_i,
 
-	// Êä³öµ½REGFILEµÄĞÅÏ¢£¬°üÀ¨¶Á¶Ë¿Ú1ºÍ2µÄ¶ÁÊ¹ÄÜĞÅºÅÒÔ¼°¶ÁµØÖ·ĞÅºÅ
+	// è¾“å‡ºåˆ°REGFILEçš„ä¿¡æ¯ï¼ŒåŒ…æ‹¬è¯»ç«¯å£1å’Œ2çš„è¯»ä½¿èƒ½ä¿¡å·ä»¥åŠè¯»åœ°å€ä¿¡å·
 	output reg                    reg1_read_o,
 	output reg                    reg2_read_o,     
 	output reg[`RegAddrBus]       reg1_addr_o,
 	output reg[`RegAddrBus]       reg2_addr_o, 	      
 	
-	//ËÍµ½IFµÄ·ÖÖ§flagºÍ·ÖÖ§µØÖ·
+	//é€åˆ°IFçš„åˆ†æ”¯flagå’Œåˆ†æ”¯åœ°å€
 	output reg                    branch_flag,
 	output reg[`InstAddrBus]      branch_addr,
 	
-	// ËÍµ½EX½×¶ÎµÄĞÅÏ¢
-    output reg[`AluOpBus]         aluop_o,  // ALU²Ù×÷Âë
-    //output reg[`AluSelBus]        alusel_o, // ALU×Ó²Ù×÷Âë
-    output reg[`RegBus]           reg1_o,   // Ô´²Ù×÷Êı 1
-    output reg[`RegBus]           reg2_o,   // Ô´²Ù×÷Êı 2
-    output reg[`RegAddrBus]       wd_o,     // ÒªĞ´ÈëµÄ¼Ä´æÆ÷µÄµØÖ·
-	output reg                    wreg_o ,   // Ğ´Ê¹ÄÜĞÅºÅ
+	// é€åˆ°EXé˜¶æ®µçš„ä¿¡æ¯
+    output reg[`AluOpBus]         aluop_o,  // ALUæ“ä½œç 
+    //output reg[`AluSelBus]        alusel_o, // ALUå­æ“ä½œç 
+    output reg[`RegBus]           reg1_o,   // æºæ“ä½œæ•° 1
+    output reg[`RegBus]           reg2_o,   // æºæ“ä½œæ•° 2
+    output reg[`RegAddrBus]       wd_o,     // è¦å†™å…¥çš„å¯„å­˜å™¨çš„åœ°å€
+	output reg                    wreg_o ,   // å†™ä½¿èƒ½ä¿¡å·
 	output reg stallreq
     );
     
-        // È¡µÃÖ¸ÁîµÄÖ¸ÁîÂë¡¢¹¦ÄÜÂëµÈ£»
+        // å–å¾—æŒ‡ä»¤çš„æŒ‡ä»¤ç ã€åŠŸèƒ½ç ç­‰ï¼›
   wire[3:0] op = inst_i[7:4]; 
   wire[4:0] rs = inst_i[3:2];
   wire[5:0] rd = inst_i[1:0];
-    // ±£´æÖ¸ÁîÖ´ĞĞĞèÒªµÄÁ¢¼´Êı
+    // ä¿å­˜æŒ‡ä»¤æ‰§è¡Œéœ€è¦çš„ç«‹å³æ•°
   reg[`RegBus]	imm;
-    // Ö¸ÁîÊÇ·ñÓĞĞ§
+    // æŒ‡ä»¤æ˜¯å¦æœ‰æ•ˆ
   reg instvalid;
   
-  reg[3:0] op16code;    //16Î»Ö¸ÁîµÄ²Ù×÷Âë
-  reg[`RegAddrBus]  op16_addr_rd;   //loadÖ¸ÁîÄ¿µÄ¼Ä´æÆ÷µØÖ·
-  reg[`RegBus]       op16_addr_rs;  //storeÖ¸ÁîÔ´¼Ä´æÆ÷µØÖ·
+  reg[3:0] op16code;    //16ä½æŒ‡ä»¤çš„æ“ä½œç 
+  reg[`RegAddrBus]  op16_addr_rd;   //loadæŒ‡ä»¤ç›®çš„å¯„å­˜å™¨åœ°å€
+  reg[`RegBus]       op16_addr_rs;  //storeæŒ‡ä»¤æºå¯„å­˜å™¨åœ°å€
   
   
  
-    // ÒëÂë½×¶Î£¬×éºÏÂß¼­
-    //   Èç¹ûÖØÖÃÔò½øĞĞÒÔÏÂ²Ù×÷
+    // è¯‘ç é˜¶æ®µï¼Œç»„åˆé€»è¾‘
+    //   å¦‚æœé‡ç½®åˆ™è¿›è¡Œä»¥ä¸‹æ“ä½œ
 	always @ (*) begin	
         if (rst == `RstEnable) begin
             branch_flag<= `BranchInvalid;
@@ -87,7 +87,7 @@ module id(
 			is_16op <= `Is16Inst;
 			op16code <= `NOP_16OP;
 
-     // Èç¹û²»ÖØÖÃÔò½øĞĞÒÔÏÂ²Ù×÷
+     // å¦‚æœä¸é‡ç½®åˆ™è¿›è¡Œä»¥ä¸‹æ“ä½œ
 	  end else if(is_16op_i== `Is8Inst) begin
 	       branch_flag <= `BranchInvalid;
            branch_addr <= `NOPRegAddr;
@@ -113,7 +113,7 @@ module id(
 	           `ALU_LOAD:begin
 		  	       aluop_o <= `ALU_LOAD;
 //                   alusel_o<=`EXE_RES_LOGIC;
-                   reg1_o <= inst_i;  //LOADÖ¸ÁîµÄÔ´Êı¾İÔÚÄÚ´æµÄµØÖ·
+                   reg1_o <= inst_i;  //LOADæŒ‡ä»¤çš„æºæ•°æ®åœ¨å†…å­˜çš„åœ°å€
                    wd_o <= op16_addr_rd;
                    wreg_o <= `WriteEnable;
                    instvalid <=`InstValid;
@@ -123,7 +123,7 @@ module id(
 	           `ALU_STORE:begin
 		  	       aluop_o <= `ALU_STORE;
   //                 alusel_o<=`EXE_RES_LOGIC;
-                   reg1_o <= inst_i;  //STOREÖ¸ÁîµÄÔ´Êı¾İÔÚÄÚ´æµÄµØÖ·
+                   reg1_o <= inst_i;  //STOREæŒ‡ä»¤çš„æºæ•°æ®åœ¨å†…å­˜çš„åœ°å€
                    reg2_read_o <= `ReadEnable;
                    reg2_addr_o <= op16_addr_rs;
                    instvalid <= `InstValid;
@@ -132,8 +132,8 @@ module id(
 	           end
 	       endcase
 	  end else   begin
-          // ÕâÀïÆäÊµÊÇdefaultÀïÃæµÄÖµ
-          //   ÎÒÃÇÏÈ¿´ÏÂÃæµÄcase
+          // è¿™é‡Œå…¶å®æ˜¯defaulté‡Œé¢çš„å€¼
+          //   æˆ‘ä»¬å…ˆçœ‹ä¸‹é¢çš„case
             branch_flag <= `BranchInvalid;
             branch_addr <= `NOPRegAddr;
 			op16_addr_rd <= `NOPRegAddr;
@@ -196,17 +196,17 @@ module id(
 		  			 
 		    `EXE_ORI:			
 				begin
-					wreg_o <= `WriteEnable; // Ğ´Ê¹ÄÜ
+					wreg_o <= `WriteEnable; // å†™ä½¿èƒ½
 					aluop_o <= `EXE_OR_OP;
 	//		  		alusel_o <= `EXE_RES_LOGIC; 
-					reg1_read_o <= `ReadEnable;	// ¶Á rs
-					reg2_read_o <= `ReadDisable;	// ²»¶Á rt  	
-	//               imm <= {16'h0, inst_i[15:0]};	// Á¢¼´ÊıÎŞ·ûºÅÀ©Õ¹	
-					wd_o <= inst_i[1:0];  // Ğ´¼Ä´æÆ÷µØÖ·Î» rt
+					reg1_read_o <= `ReadEnable;	// è¯» rs
+					reg2_read_o <= `ReadDisable;	// ä¸è¯» rt  	
+	//               imm <= {16'h0, inst_i[15:0]};	// ç«‹å³æ•°æ— ç¬¦å·æ‰©å±•	
+					wd_o <= inst_i[1:0];  // å†™å¯„å­˜å™¨åœ°å€ä½ rt
 					instvalid <= `InstValid;	
 				end 							 
             default:
-                // ÔÚÉÏÃæÒÑ¾­¸ø³ö
+                // åœ¨ä¸Šé¢å·²ç»ç»™å‡º
                 begin 
                 end
 		  endcase
@@ -215,13 +215,13 @@ module id(
 
 	
 
-    // È·¶¨ÔËËãµÄ²Ù×÷Êı1
+    // ç¡®å®šè¿ç®—çš„æ“ä½œæ•°1
 	always @ (*) begin
         if(rst == `RstEnable) begin
 			reg1_o <= `ZeroWord;
         end else if(reg1_read_o == `ReadEnable) begin
             reg1_o <= reg1_data_i;
-            // ÈôÃ»ÓĞ ¶ÁÊ¹ÄÜ£¬Ôò°ÑÁ¢¼´Êı×÷ÎªÊı¾İÊä³öÎª ²Ù×÷Êı1
+            // è‹¥æ²¡æœ‰ è¯»ä½¿èƒ½ï¼Œåˆ™æŠŠç«‹å³æ•°ä½œä¸ºæ•°æ®è¾“å‡ºä¸º æ“ä½œæ•°1
         end else if(reg1_read_o == `ReadDisable) begin
             reg1_o <= imm;
         end else begin
@@ -229,13 +229,13 @@ module id(
         end
     end
 	
-    // È·¶¨ÔËËãµÄ²Ù×÷Êı2
+    // ç¡®å®šè¿ç®—çš„æ“ä½œæ•°2
 	always @ (*) begin
 		if(rst == `RstEnable) begin
 			reg2_o <= `ZeroWord;
         end else if(reg2_read_o == `ReadEnable) begin
             reg2_o <= reg2_data_i;
-            // ÈôÃ»ÓĞ ¶ÁÊ¹ÄÜ£¬Ôò°ÑÁ¢¼´Êı×÷ÎªÊı¾İÊä³öÎª ²Ù×÷Êı1
+            // è‹¥æ²¡æœ‰ è¯»ä½¿èƒ½ï¼Œåˆ™æŠŠç«‹å³æ•°ä½œä¸ºæ•°æ®è¾“å‡ºä¸º æ“ä½œæ•°1
         end else if(reg2_read_o == `ReadDisable) begin
             reg2_o <= imm;
         end else begin

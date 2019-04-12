@@ -18,7 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-//¸÷ÀàÊ¹ÄÜĞÅºÅ
+//å„ç±»ä½¿èƒ½ä¿¡å·
 `define RstEnable 1
 `define RstDisable 0
 `define ChipEnable 1
@@ -32,18 +32,18 @@
 `define BranchValid 1
 `define BranchInvalid 0
 
-//8 or 16 Î»Ö¸Áî
+//8 or 16 ä½æŒ‡ä»¤
 `define Is8Inst 0
 `define Is16Inst 1
 
-//Á÷Ë®ÏßÔİÍ£
+//æµæ°´çº¿æš‚åœ
 `define Stop 1
 `define NoStop 0
-//Áã
+//é›¶
 `define ZeroWord 8'b00000000
-//×Ö½Ú¿í¶È
+//å­—èŠ‚å®½åº¦
 `define ByteWidth 7:0
-//¸÷ÀàBus´ø¿í
+//å„ç±»Buså¸¦å®½
 `define InstAddrBus 7:0
 `define InstBus 7:0
 `define MemBus 7:0
@@ -52,7 +52,7 @@
 `define DataAddrBus 7:0
 `define DataBus 7:0
 `define AluOpBus 3:0
-//¸÷Ààµ¥ÔªÊıÁ¿
+//å„ç±»å•å…ƒæ•°é‡
 `define RegNum 256
 `define InstMemNum 256
 `define InstMemNum2 8
@@ -62,9 +62,9 @@
 //
 `define ARegAddr 8'b00000000
 `define BRegAddr 8'b00000011
-//¿ÕµØÖ·
+//ç©ºåœ°å€
 `define NOPRegAddr 8'b00000000
-//²Ù×÷Âë
+//æ“ä½œç 
 `define NOP_16OP 4'b0000
 `define EXE_NOP_OP 4'b1111
 `define EXE_RES_NOP 2'b11

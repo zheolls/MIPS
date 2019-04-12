@@ -30,7 +30,7 @@ module if_id(
     output reg[`InstBus] id_inst,
 	output reg is_16op_o
     );
-        // Èç¹û¸´Î»µÄ»°£¬´«µİ¸øÏÂÒ»¸ö½×¶ÎµÄÊı¾İÒªÇåÁã
+        // å¦‚æœå¤ä½çš„è¯ï¼Œä¼ é€’ç»™ä¸‹ä¸€ä¸ªé˜¶æ®µçš„æ•°æ®è¦æ¸…é›¶
 	always @ (posedge clk) begin
         if (rst == `RstEnable) begin
             id_pc <= `ZeroWord;

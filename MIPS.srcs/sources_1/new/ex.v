@@ -22,7 +22,7 @@
 
 module ex(
 	input wire					  rst,
-	// ´ÓÒëÂë½×¶ÎËÍ¹ıÀ´µÄĞÅÏ¢
+	// ä»è¯‘ç é˜¶æ®µé€è¿‡æ¥çš„ä¿¡æ¯
 	input wire[`AluOpBus]         aluop_i,
 //	input wire[`AluSelBus]        alusel_i,
 	input wire[`RegBus]           reg1_i,
@@ -33,7 +33,7 @@ module ex(
 	input wire                     mem_wr_i,
 
 
-	// Ö´ĞĞµÄ½á¹û
+	// æ‰§è¡Œçš„ç»“æœ
 	output reg[`RegAddrBus]       wd_o,
 	output reg                    wreg_o,
     output reg[`RegBus]			  wdata_o,
@@ -42,10 +42,10 @@ module ex(
 	output reg[`InstAddrBus]      mem_addr_o,
     output reg stallreq
     );
-        // ±£´æÂß¼­ÔËËãµÄ½á¹û
+        // ä¿å­˜é€»è¾‘è¿ç®—çš„ç»“æœ
 	reg[`RegBus] logicout;
     
-    // ×éºÏÂß¼­£º¸ù¾İÔËËã×ÓÀàĞÍ½øĞĞÔËËã£¬´Ë´¦Ö»ÓĞ"»òÔËËã"
+    // ç»„åˆé€»è¾‘ï¼šæ ¹æ®è¿ç®—å­ç±»å‹è¿›è¡Œè¿ç®—ï¼Œæ­¤å¤„åªæœ‰"æˆ–è¿ç®—"
 	always @ (*) begin
 		if(rst == `RstEnable) begin
 			logicout <= `ZeroWord;
@@ -56,13 +56,13 @@ module ex(
 			mem_addr_o<= `NOPRegAddr;
 			wdata_o<= `ZeroWord;
 		end else begin
-		 // ĞèÒªĞ´ÈëµÄ¼Ä´æÆ÷µÄµØÖ·
+		 // éœ€è¦å†™å…¥çš„å¯„å­˜å™¨çš„åœ°å€
             wd_o <= wd_i;          
-            // ¼Ä´æÆ÷Ğ´Ê¹ÄÜ
+            // å¯„å­˜å™¨å†™ä½¿èƒ½
             wreg_o <= wreg_i;
-            //Ö÷´æĞ´Ê¹ÄÜ
+            //ä¸»å­˜å†™ä½¿èƒ½
             mem_en_o<=mem_en_i;
-            //Ö÷´æ¶Á\Ğ´ĞÅºÅ
+            //ä¸»å­˜è¯»\å†™ä¿¡å·
             mem_wr_o<=mem_wr_i;
 			case (aluop_i)
                 `EXE_OR_OP:	begin

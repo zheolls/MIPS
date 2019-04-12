@@ -24,20 +24,20 @@ module mips_top(
     input wire clk,
     input wire rst
     );
-    //Á¬½ÓÖ¸Áî´æ´¢Æ÷
+    //è¿æ¥æŒ‡ä»¤å­˜å‚¨å™¨
     wire[`InstAddrBus]  inst_addr;
     wire[`InstBus]      inst;
     wire                rom_ce;
     
     
-    //Á¬½ÓÊı¾İ´¢´æÆ÷
+    //è¿æ¥æ•°æ®å‚¨å­˜å™¨
     wire[`DataAddrBus] data_addr;
     wire[`DataBus]     ram_data;
     wire ram_we;
     wire ram_ce;  
     wire[`DataBus]  data;
     
-    //ÊµÀı»¯MIPS
+    //å®ä¾‹åŒ–MIPS
     mainmips mainmips0(
         .rst(rst),
         .clk(clk),
@@ -51,14 +51,14 @@ module mips_top(
         .ram_ce_o(ram_ce)
     );
     
-        //Ö¸Áî´æ´¢Æ÷ÊµÀı»¯
+        //æŒ‡ä»¤å­˜å‚¨å™¨å®ä¾‹åŒ–
     inst_rom inst_rom0(
         .ce(rom_ce),
         .addr(inst_addr),
         .inst(inst)
     );
     
-    //Êı¾İ´æ´¢Æ÷ÊµÀı»¯
+    //æ•°æ®å­˜å‚¨å™¨å®ä¾‹åŒ–
     data_ram data_ram0(
         .clk(clk),
         .addr(data_addr),

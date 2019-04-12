@@ -26,7 +26,7 @@ module ex_mem(
     input wire[5:0]               stall,
 
 	
-	// À´×ÔÖ´ĞĞ½×¶ÎµÄĞÅÏ¢
+	// æ¥è‡ªæ‰§è¡Œé˜¶æ®µçš„ä¿¡æ¯
 	input wire[`RegAddrBus]       ex_wd,
 	input wire                    ex_wreg,
     input wire[`RegBus]		      ex_wdata, 	
@@ -34,17 +34,17 @@ module ex_mem(
     input wire                    ex_mem_wr,
     input wire[`InstAddrBus]      ex_mem_addr,	
 	
-	// ËÍµ½·Ã´æ½×¶ÎµÄĞÅÏ¢
+	// é€åˆ°è®¿å­˜é˜¶æ®µçš„ä¿¡æ¯
     output reg[`RegAddrBus]       mem_wd,
 	output reg                    mem_wreg,
-    output reg[`RegBus]			  mem_wdata£¬
+    output reg[`RegBus]			  mem_wdataï¼Œ
 	output reg                    mem_en,
     output reg                    mem_wr,
     output reg[`InstAddrBus]      mem_addr
     );
-        // Ê±ĞòÂß¼­
+        // æ—¶åºé€»è¾‘
 	always @ (posedge clk) begin
-        // Èç¹ûÖØÖÃµÄ»°£¬Çå³ıĞÅÏ¢
+        // å¦‚æœé‡ç½®çš„è¯ï¼Œæ¸…é™¤ä¿¡æ¯
 		if(rst == `RstEnable) begin
 			mem_wd <= `NOPRegAddr;
 			mem_wreg <= `WriteDisable;
@@ -52,7 +52,7 @@ module ex_mem(
 			mem_en<= `ChipDisable;
 		    mem_wr<= `WriteDisable;
 		    mem_addr<= `NOPRegAddr;	
-            // ²»ÖØÖÃµÄ»°£¬°ÑĞÅÏ¢´«µİµ½MEM½×¶Î
+            // ä¸é‡ç½®çš„è¯ï¼ŒæŠŠä¿¡æ¯ä¼ é€’åˆ°MEMé˜¶æ®µ
 		end else if (stall[3] == `Stop && stall[4] == `NoStop ) begin
 		    mem_wd <= `NOPRegAddr;
 			mem_wreg <= `WriteDisable;
