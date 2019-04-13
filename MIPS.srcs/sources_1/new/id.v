@@ -28,6 +28,7 @@ module id(
     // 读取的REGFILE的值
 	input wire[`RegBus]           reg1_data_i,
 	input wire[`RegBus]           reg2_data_i,
+	input wire                    is_16op_i, 
 
 	// 输出到REGFILE的信息，包括读端口1和2的读使能信号以及读地址信号
 	output reg                    reg1_read_o,
@@ -46,6 +47,9 @@ module id(
     output reg[`RegBus]           reg2_o,   // 源操作数 2
     output reg[`RegAddrBus]       wd_o,     // 要写入的寄存器的地址
 	output reg                    wreg_o ,   // 写使能信号
+	output reg                     mem_en_o,   //读写写主存使能信号
+	output reg                     mem_wr_o,    //读写主存信号，高电平写，低电平读
+	output reg is_16op,          //是否是16位指令
 	output reg stallreq
     );
     
@@ -83,7 +87,7 @@ module id(
 			op16_addr_rd <= `NOPRegAddr;
 			op16_addr_rs <= `NOPRegAddr;
 			mem_en_o <= `ChipDisable;
-			mem_wr_o <= `WritDisnable;
+			mem_wr_o <= `WriteDisable;
 			is_16op <= `Is16Inst;
 			op16code <= `NOP_16OP;
 
@@ -150,7 +154,7 @@ module id(
 			imm <= `ZeroWord;	
 		    op16code <= `NOP_16OP;
 			mem_en_o <= `ChipDisable;
-            mem_wr_o <= `WritDisnable;
+            mem_wr_o <= `WriteDisable;
             is_16op <= `Is16Inst;
 		  case (op)
 		  	`EXE_MOV:			

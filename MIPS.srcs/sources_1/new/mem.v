@@ -23,7 +23,7 @@
 module mem(
 	input wire					  rst,
 	
-	// 来自执行阶段的消息
+	// 来自执行阶段的消�?
 	input wire[`RegAddrBus]       wd_i,
 	input wire                    wreg_i,
     input wire[`RegBus]			  wdata_i,
@@ -38,22 +38,22 @@ module mem(
 	output reg[`InstAddrBus] mem_addr,
 	output reg[`RegBus]       mem_write_data,
 	
-	// 访存阶段的结果
+	// 访存阶段的结�?
     output reg[`RegAddrBus]       wd_o,
 	output reg                    wreg_o,
     output reg[`RegBus]			  wdata_o
     );
-    	// 如果重置则清除结果
+    	// 如果重置则清除结�?
 	always @ (*) begin
 		if(rst == `RstEnable) begin
 			wd_o <= `NOPRegAddr;
 			wreg_o <= `WriteDisable;
 		  	wdata_o <= `ZeroWord;
-			mem_en <= `ChiDisable;
+			mem_en <= `ChipDisable;
 		  	mem_wr <= `WriteDisable;
 		  	mem_addr <= `NOPRegAddr;
 		  	mem_write_data <= `ZeroWord;
-            // 否则因为ORI在此阶段不需要做任何事情，所以直接送给下个阶段（WB）
+            // 否则因为ORI在此阶段不需要做任何事情，所以直接�?�给下个阶段（WB�?
 		end else begin
 		  	wd_o <= wd_i;
 			wreg_o <= wreg_i;

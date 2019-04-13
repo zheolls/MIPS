@@ -26,7 +26,7 @@ module ex_mem(
     input wire[5:0]               stall,
 
 	
-	// 来自执行阶段的信息
+	// 来自执行阶段的信�?
 	input wire[`RegAddrBus]       ex_wd,
 	input wire                    ex_wreg,
     input wire[`RegBus]		      ex_wdata, 	
@@ -34,17 +34,17 @@ module ex_mem(
     input wire                    ex_mem_wr,
     input wire[`InstAddrBus]      ex_mem_addr,	
 	
-	// 送到访存阶段的信息
+	// 送到访存阶段的信�?
     output reg[`RegAddrBus]       mem_wd,
 	output reg                    mem_wreg,
-    output reg[`RegBus]			  mem_wdata，
+    output reg[`RegBus]			  mem_wdata,
 	output reg                    mem_en,
     output reg                    mem_wr,
     output reg[`InstAddrBus]      mem_addr
     );
         // 时序逻辑
 	always @ (posedge clk) begin
-        // 如果重置的话，清除信息
+        // 如果重置的话，清除信�?
 		if(rst == `RstEnable) begin
 			mem_wd <= `NOPRegAddr;
 			mem_wreg <= `WriteDisable;
