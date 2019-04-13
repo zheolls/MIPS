@@ -29,7 +29,6 @@ module id(
     // 读取的REGFILE的值
 	input wire[`RegBus]           reg1_data_i,
 	input wire[`RegBus]           reg2_data_i,
-	//input wire                    is_16op_i, 
 
 	// 输出到REGFILE的信息，包括读端口1和2的读使能信号以及读地址信号
 	output reg                    reg1_read_o,
@@ -43,14 +42,12 @@ module id(
 	
 	// 送到EX阶段的信息
     output reg[`AluOpBus]         aluop_o,  // ALU操作码
-    //output reg[`AluSelBus]        alusel_o, // ALU子操作码
     output reg[`RegBus]           reg1_o,   // 源操作数 1
     output reg[`RegBus]           reg2_o,   // 源操作数 2
     output reg[`RegAddrBus]       wd_o,     // 要写入的寄存器的地址
 	output reg                    wreg_o ,   // 写使能信号
 	output reg                     mem_en_o,   //读写写主存使能信号
 	output reg                     mem_wr_o,    //读写主存信号，高电平写，低电平读
-	//output reg is_16op,          //是否是16位指令
 	output reg stallreq
     );
     
@@ -72,6 +69,8 @@ module id(
 	wire[`RegAddrBus]       op16_addr_rd={6'b0,op16_reg[1:0]};   //load指令目的寄存器地址
 	wire[`RegAddrBus]       op16_addr_rs={6'b0,op16_reg[3:2]};  //store指令源寄存器地址
   
+	reg stallreq_reg;
+	reg[1:0] nowrd;
     //处理写后读冲突的状态表
     reg[3:0]        reg_state[3:0];
     reg[3:0]        reg_state_reg[3:0]; 
@@ -83,12 +82,7 @@ module id(
         reg_state_reg[4'h2]<= reg_state[4'h2]>>1;
         reg_state_reg[4'h3]<= reg_state[4'h3]>>1;
     end
-    
-    //处理写后读
-    always @(*)begin
-        
-    end
-  
+     
  
     // 译码阶段，组合逻辑
     //   如果重置则进行以下操作
@@ -143,6 +137,7 @@ module id(
 			reg_state[4'h1] <= 4'b0;
 			reg_state[4'h2] <= 4'b0;
 			reg_state[4'h3] <= 4'b0;
+			nowrd <= 2'b0;
      // 如果不重置则进行以下操作
 	  end else if(op16_reg==8'b0) begin
          // 这里其实是default里面的值
@@ -168,6 +163,7 @@ module id(
          reg_state[4'h1] <= reg_state_reg[4'h1];
          reg_state[4'h2] <= reg_state_reg[4'h2];
          reg_state[4'h3] <= reg_state_reg[4'h3];
+		 stallreq <= 0;
        case (op)
          `EXE_NOP_OP:
          begin
@@ -175,48 +171,66 @@ module id(
          end
          
            `EXE_MOV:            
-         begin
-             aluop_o <= `ALU_MOV;
-//              alusel_o<=`EXE_RES_LOGIC;
-             reg1_read_o <= `ReadEnable;
-             wd_o <= {6'b0,inst_i[1:0]};
-             wreg_o <= `WriteEnable;
-             instvalid <=`InstValid;
-             reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
-         end     
+				begin
+					if(reg_state_reg[rs]!=4'b0)begin
+						stallreq<=`Stop;
+					end else begin
+						aluop_o <= `ALU_MOV;
+						reg1_read_o <= `ReadEnable;
+						wd_o <= {6'b0,inst_i[1:0]};
+						wreg_o <= `WriteEnable;
+						instvalid <=`InstValid;
+						reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
+					end
+				end     
            
            `EXE_ADD:
-           begin
-              aluop_o <= `ALU_ADD;
-//                 alusel_o<=`EXE_RES_LOGIC;
-              reg1_read_o <= `ReadEnable;
-              reg2_read_o <= `ReadEnable;
-              wd_o <= {6'b0,inst_i[1:0]};
-              wreg_o <= `WriteEnable;
-              instvalid <= `InstValid;
-              reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
-           end
+				begin
+					if(reg_state_reg[4'b0]!=4'b0|reg_state_reg[4'b0011]!=4'b0) begin
+						stallreq<=`Stop;
+					end else begin
+						aluop_o <= `ALU_ADD;
+						reg1_read_o <= `ReadEnable;
+						reg2_read_o <= `ReadEnable;
+						wd_o <= {6'b0,inst_i[1:0]};
+						wreg_o <= `WriteEnable;
+						instvalid <= `InstValid;
+						reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
+					end
+				end
            
            `EXE_JMP:
-           begin
-                op16 <= inst_i;
-                aluop_o <= `ALU_NOP;
-                instvalid <= `InstValid;
-           end
+			    begin
+					if(reg_state_reg[rs]!=4'b0)begin
+                          stallreq<=`Stop;
+					end else begin
+						op16 <= inst_i;
+						aluop_o <= `ALU_NOP;
+						instvalid <= `InstValid;
+					end
+			    end
            
            `EXE_LOAD:
-           begin
-                 op16 <=inst_i;
-                 aluop_o <=`ALU_NOP;
-                 instvalid <=`InstValid;
-           end
+				begin
+					if(reg_state_reg[rs]!=4'b0)begin
+						 stallreq<=`Stop;
+					end else begin
+						op16 <=inst_i;
+						aluop_o <=`ALU_NOP;
+						instvalid <=`InstValid;
+					end
+				end
            
            `EXE_STORE:
-           begin
-                  op16 <=inst_i;
-                  aluop_o <=`ALU_NOP;
-                  instvalid <=`InstValid;
-           end                
+				begin
+					if(reg_state_reg[rs]!=4'b0)begin
+						 stallreq<=`Stop;
+					end else begin
+						op16 <=inst_i;
+						aluop_o <=`ALU_NOP;
+						instvalid <=`InstValid;
+					end
+				end                
                     
          `EXE_ORI:            
          begin
