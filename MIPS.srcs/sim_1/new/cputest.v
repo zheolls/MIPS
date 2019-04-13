@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2019/04/11 20:37:14
+// Create Date: 2019/04/12 19:00:04
 // Design Name: 
-// Module Name: inst_rom
+// Module Name: cputest
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,19 +20,19 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module inst_rom(
-    input wire ce,
-    input wire[`InstAddrBus] addr,
-    output reg[`InstBus] inst
+module cputest(
+
     );
-    reg[`InstBus] inst_mem[0:`InstMemNum-1];
-    initial $readmemh ("ins_mem.mem",inst_mem);
-    
-    always @ (*) begin
-        if (ce==`ChipDisable) begin
-            inst<=`ZeroWord;
-        end else begin
-            inst<=inst_mem[addr[`InstMemNum2-1:0]];
-        end
+    reg clk;
+    reg rst;
+    mips_top mips_top0(
+        .clk(clk),
+        .rst(rst)
+    );
+    initial begin
+        clk=0;
+        rst=1;
+        #10 rst=0;
     end
+    always #5 clk=~clk;
 endmodule

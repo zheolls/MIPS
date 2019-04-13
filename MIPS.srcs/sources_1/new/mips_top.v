@@ -24,13 +24,13 @@ module mips_top(
     input wire clk,
     input wire rst
     );
-    //连接指令存储器
+    //连接指令存储�?
     wire[`InstAddrBus]  inst_addr;
     wire[`InstBus]      inst;
     wire                rom_ce;
     
     
-    //连接数据储存器
+    //连接数据储存�?
     wire[`DataAddrBus] data_addr;
     wire[`DataBus]     ram_data;
     wire ram_we;
@@ -62,7 +62,7 @@ module mips_top(
     data_ram data_ram0(
         .clk(clk),
         .addr(data_addr),
-        .data(ram_data),
+        .data_i(ram_data),
         .we(ram_we),
         .ce(ram_ce),
         .data_o(data)

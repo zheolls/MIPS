@@ -27,10 +27,9 @@ module if_id(
     input clk,
     input wire[5:0] stall,
     output reg[`InstAddrBus] id_pc,
-    output reg[`InstBus] id_inst,
 	output reg[`InstBus] id_inst
     );
-        // 如果复位的话，传递给下一个阶段的数据要清零
+        // 如果复位的话，传递给下一个阶段的数据要清�?
 	always @ (posedge clk) begin
         if (rst == `RstEnable) begin
             id_pc <= `ZeroWord;

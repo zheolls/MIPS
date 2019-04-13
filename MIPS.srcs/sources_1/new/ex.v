@@ -29,16 +29,16 @@ module ex(
 	input wire[`RegBus]           reg2_i,
 	input wire[`RegAddrBus]       wd_i,
 	input wire                    wreg_i,
-	input wire                     mem_en_i,
-	input wire                     mem_wr_i,
+	input wire                     mem_ce_i,
+	input wire                     mem_we_i,
 
 
 	// 执行的结�?
 	output reg[`RegAddrBus]       wd_o,
 	output reg                    wreg_o,
     output reg[`RegBus]			  wdata_o,
-	output reg                      mem_en_o,
-    output reg                      mem_wr_o,
+	output reg                      mem_ce_o,
+    output reg                      mem_we_o,
 	output reg[`InstAddrBus]      mem_addr_o,
     output reg stallreq
     );
@@ -51,8 +51,8 @@ module ex(
 			logicout <= `ZeroWord;
 			wd_o<= `WriteEnable;
 			wreg_o<= `WriteEnable;
-			mem_en_o<= `ChipEnable;
-			mem_wr_o<= `WriteEnable;
+			mem_ce_o<= `ChipEnable;
+			mem_we_o<= `WriteEnable;
 			mem_addr_o<= `NOPRegAddr;
 			wdata_o<= `ZeroWord;
 			stallreq<=`NoStop;
@@ -64,9 +64,9 @@ module ex(
             // 寄存器写使能
             wreg_o <= wreg_i;
             //主存写使�?
-            mem_en_o<=mem_en_i;
+            mem_ce_o<=mem_ce_i;
             //主存读\写信�?
-            mem_wr_o<=mem_wr_i;
+            mem_we_o<=mem_we_i;
 			case (aluop_i)
                 `EXE_OR_OP:	begin
 					wdata_o <= reg1_i | reg2_i;

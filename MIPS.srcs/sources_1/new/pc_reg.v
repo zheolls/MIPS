@@ -27,10 +27,9 @@ module pc_reg(
     input wire[`InstAddrBus] pc_branch, 
 	input wire branch_flag,
     output reg[`InstAddrBus] pc,
-    output reg ce,
-
+    output reg ce
     );
-        // 指令存储器禁用的时候 PC值需要归零
+        // 指令存储器禁用的时�?? PC值需要归�?
 	always @ (posedge clk) begin
         if (ce == `ChipDisable) begin
 			pc <= `ZeroWord;

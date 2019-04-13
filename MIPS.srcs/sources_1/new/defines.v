@@ -32,14 +32,14 @@
 `define BranchValid 1
 `define BranchInvalid 0
 
-//8 or 16 位指令
+//8 or 16 位指�?
 `define Is8Inst 0
 `define Is16Inst 1
 
-//流水线暂停
+//流水线暂�?
 `define Stop 1
 `define NoStop 0
-//零
+//�?
 `define ZeroWord 8'b00000000
 //字节宽度
 `define ByteWidth 7:0
@@ -62,11 +62,11 @@
 //
 `define ARegAddr 8'b00000000
 `define BRegAddr 8'b00000011
-//空地址
+//空地�?
 `define NOPRegAddr 8'b00000000
-//操作码
+//操作�?
 `define NOP_16OP 4'b0000
-`define EXE_NOP_OP 4'0000
+`define EXE_NOP_OP 4'b0000
 `define EXE_RES_NOP 2'b11
 
 `define ALU_NOP 4'b0000
