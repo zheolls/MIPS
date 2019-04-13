@@ -21,18 +21,24 @@
 `include "defines.v"
 
 module pc_reg(
-    input wire rst,
-    input wire clk,  
-    input wire[5:0] stall, 
+    input rst,
+    input clk,
+    input wire[5:0] stall,
+    input wire branch_flag,
+    input wire[`InstAddrBus] pc_branch,  
     output reg[`InstAddrBus] pc,
     output reg ce
     );
         // 指令存储器禁用的时候 PC值需要归零
 	always @ (posedge clk) begin
         if (ce == `ChipDisable) begin
-			pc <= 8'h00000000;
-		end else if (stall[0] == `NoStop) begin
-	 		pc <= pc + 4'h1;
+			pc <= 8'b0;
+		end else if(stall[0]==`NoStop) begin
+		      if(branch_flag)begin
+		           pc<=pc_branch;
+		      end else begin
+	 		       pc <= pc + 8'b1;
+		      end
 		end
 	end
 	

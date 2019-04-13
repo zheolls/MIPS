@@ -41,13 +41,20 @@ module regfile(
     );
         // 定义8个8位寄存器
     reg[`RegBus]  regs[0:`RegNum-1];
-
+    
+    //test
+ /*   always@(posedge clk)begin
+         regs[8'b0000]<=8'b1000_0000;
+         regs[8'b0001]<=8'b1000_0001;
+         regs[8'b0010]<=8'b1000_0010;
+         regs[8'b0011]<=8'b1000_0011;
+    end*/
     // 写操作
 	always @ (posedge clk) begin
 		if (rst == `RstDisable) begin
             // 如果 写使能 而且 我们没有向0号寄存器写入东西的时候，我们才向寄存器里面写入
             // 因为 0 号寄存器只读而且永远读出 32'h0
-            if((we == `WriteEnable) && (waddr != `RegNum'h0)) begin
+            if(we == `WriteEnable) begin
 				regs[waddr] <= wdata;
 			end
 		end
@@ -56,9 +63,6 @@ module regfile(
 	always @ (*) begin
        // 如果重置则读出 32'h0
 	  if(rst == `RstEnable) begin
-          rdata1 <= `ZeroWord;
-       // 如果读0号寄存器，也只读出0
-	  end else if(raddr1 == `RegNum'h0) begin
           rdata1 <= `ZeroWord;
        // 当读地址与写地址相同，且写使能，且端口1读使能，则要把写入的数据直接读出来
        //   数据前推的实现，后面会提及

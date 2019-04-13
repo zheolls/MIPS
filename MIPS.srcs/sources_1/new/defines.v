@@ -28,9 +28,6 @@
 `define RegAddrBus 7:0
 `define RegBus 7:0
 `define RegNum 4
-//流水线暂停
-`define Stop 1
-`define NoStop 0
 
 `define MemBus 7:0
 `define InstMemNum 256
@@ -45,26 +42,30 @@
 `define ReadEnable 1
 `define ReadDisable 0
 `define AluOpBus 3:0
+`define AluSelBus 1:0
 
-`define NOPRegAddr "0000"
+`define NOPRegAddr 4'b0000
 `define InstValid 1
 `define InstInvalid 0
-
-`define EXE_NOP_OP 4'b1111
+`define EXE_NOP_OP 4'b0000
 `define EXE_RES_NOP 2'b11
-`define ALU_MOV 4'b0000
-`define ALU_ADD 4'b0001
-`define ALU_JMP 4'b0010
-`define ALU_LOAD 4'b0011
-`define ALU_STORE 4'b0100
+
+`define ALU_NOP 4'b0000
+`define ALU_MOV 4'b0001
+`define ALU_ADD 4'b0010
+`define ALU_JMP 4'b0011
+`define ALU_LOAD 4'b0100
+`define ALU_STORE 4'b0101
 `define EXE_OR_OP 4'b1000
 `define EXE_RES_LOGIC 0
 
-`define EXE_RES_LOGIC 0
+`define EXE_MOV 4'b0001
+`define EXE_ADD 4'b0010
+`define EXE_JMP 4'b0011
+`define EXE_LOAD 4'b0100
+`define EXE_STORE 4'b0101
+`define EXE_ORI 4'b0110
 
-`define EXE_MOV "0000"
-`define EXE_ADD "0001"
-`define EXE_JMP "0010"
-`define EXE_LOAD "0011"
-`define EXE_STORE "0100"
-`define EXE_ORI "0101"
+//流水线暂停
+`define Stop 1
+`define NoStop 0

@@ -21,6 +21,7 @@
 `include "defines.v"
 
 module id(
+    input wire                  clk,
 	input wire					  rst,
     input wire[`InstAddrBus]	  pc_i,
 	input wire[`InstBus]          inst_i,
@@ -28,39 +29,66 @@ module id(
     // 读取的REGFILE的值
 	input wire[`RegBus]           reg1_data_i,
 	input wire[`RegBus]           reg2_data_i,
-
+    
 	// 输出到REGFILE的信息，包括读端口1和2的读使能信号以及读地址信号
 	output reg                    reg1_read_o,
 	output reg                    reg2_read_o,     
 	output reg[`RegAddrBus]       reg1_addr_o,
 	output reg[`RegAddrBus]       reg2_addr_o, 	      
 	
+	//送到IF的分支flag和分支地址
+	output reg                     branch_flag,
+	output reg[`InstAddrBus]     branch_op,
 	// 送到EX阶段的信息
     output reg[`AluOpBus]         aluop_o,  // ALU操作码
-    //output reg[`AluSelBus]        alusel_o, // ALU子操作码
+//    output reg[`AluSelBus]        alusel_o, // ALU子操作码
     output reg[`RegBus]           reg1_o,   // 源操作数 1
     output reg[`RegBus]           reg2_o,   // 源操作数 2
     output reg[`RegAddrBus]       wd_o,     // 要写入的寄存器的地址
-	output reg                    wreg_o ,   // 写使能信号
-	output reg stallreq
+	output reg                    wreg_o,    // 写寄存器使能信号
+	output reg                     mem_en_o,   //读写写主存使能信号
+	output reg                     mem_wr_o,    //读写主存信号，高电平写，低电平读
+    output reg stallreq
     );
     
         // 取得指令的指令码、功能码等；
-  wire[5:0] op = inst_i[31:26]; //对于ORI指令只需要判断 26-31bit 的值即可判断
-  wire[4:0] op2 = inst_i[10:6];
-  wire[5:0] op3 = inst_i[5:0];
-  wire[4:0] op4 = inst_i[20:16];
+  wire[3:0] op = inst_i[7:4]; 
+  wire[4:0] rs = inst_i[3:2];
+  wire[5:0] rd = inst_i[1:0];
     // 保存指令执行需要的立即数
   reg[`RegBus]	imm;
     // 指令是否有效
   reg instvalid;
+  //16位指令暂存
+  reg[7:0] op16;    //16位指令前八位
+  reg[7:0] op16_reg;  //存储16位指令前八位的寄存器
+  wire[3:0] op16_code=op16_reg[7:4]; //16位指令的操作码
+  wire[`RegAddrBus]       op16_addr_rd={6'b0,op16_reg[1:0]};   //load指令目的寄存器地址
+  wire[`RegAddrBus]       op16_addr_rs={6'b0,op16_reg[3:2]};  //store指令源寄存器地址
   
+    //处理写后读冲突的状态表
+    reg[3:0]        reg_state[3:0];
+    reg[3:0]        reg_state_reg[3:0]; 
+        
+        //reg_state表的维护
+    always @(posedge clk)begin
+        reg_state_reg[4'h0]<= reg_state[4'h0]>>1;
+        reg_state_reg[4'h1]<= reg_state[4'h1]>>1;
+        reg_state_reg[4'h2]<= reg_state[4'h2]>>1;
+        reg_state_reg[4'h3]<= reg_state[4'h3]>>1;
+    end
+    
+    //处理写后读
+    always @(*)begin
+        
+    end
   
- 
     // 译码阶段，组合逻辑
     //   如果重置则进行以下操作
 	always @ (*) begin	
         if (rst == `RstEnable) begin
+            branch_flag<=1'b0;
+            branch_op<=8'b0;
             aluop_o <= `EXE_NOP_OP;
 //			alusel_o <= `EXE_RES_NOP;
             wd_o <= `NOPRegAddr;
@@ -71,61 +99,156 @@ module id(
 			reg1_addr_o <= `NOPRegAddr;
 			reg2_addr_o <= `NOPRegAddr;
 			imm <= 8'h0;
+			mem_en_o<=1'b0;
+			mem_wr_o<=1'b0;;
+			op16<=8'b0;
+			reg1_o<=8'b0;
+			reg2_o<=8'b0;
+			stallreq<=`NoStop;
+			 reg_state[4'h0]<=4'b0;
+			 reg_state[4'h1]<=4'b0;
+			 reg_state[4'h2]<=4'b0;
+			 reg_state[4'h3]<=4'b0;
      // 如果不重置则进行以下操作
-	  end else begin
-          // 这里其实是default里面的值
-          //   我们先看下面的case
-			aluop_o <= `EXE_NOP_OP;
-//			alusel_o <= `EXE_RES_NOP;
-			wd_o <= inst_i[15:11];
-			wreg_o <= `WriteDisable;
-            instvalid <= `InstInvalid;	   
-			reg1_read_o <= 1'b0;
-			reg2_read_o <= 1'b0;
-			reg1_addr_o <= inst_i[25:21];
-			reg2_addr_o <= inst_i[20:16];		
-			imm <= `ZeroWord;			
-		  case (op)
-		  	`EXE_MOV:			
-            begin
-
-		  	end 	
-		  	
-		  	`EXE_ADD:
-		  	begin
-		  	end
-		  	
-		  	`EXE_JMP:
-		  	begin
-		  	end
-		  	
-		  	`EXE_LOAD:
-		  	begin
-		  	end
-		  	
-		  	`EXE_STORE:
-		  	begin
-		  	end				
-		  			 
-		    `EXE_ORI:			
-            begin
-		  		wreg_o <= `WriteEnable; // 写使能
-                aluop_o <= `EXE_OR_OP;
-//		  		alusel_o <= `EXE_RES_LOGIC; 
-                reg1_read_o <= 1'b1;	// 读 rs
-                reg2_read_o <= 1'b0;	// 不读 rt  	
-                imm <= {16'h0, inst_i[15:0]};	// 立即数无符号扩展	
-                wd_o <= inst_i[20:16];  // 写寄存器地址位 rt
-				instvalid <= `InstValid;	
-		  	end 							 
-            default:
-                // 在上面已经给出
-                begin 
-                end
-		  endcase
+	  end else if(op16_reg==8'b0) begin
+         // 这里其实是default里面的值
+       //   我们先看下面的case
+         branch_flag<=1'b0;
+         branch_op<=8'b0;
+         aluop_o <= `EXE_NOP_OP;
+//            alusel_o <= `EXE_RES_NOP;
+         wd_o <= inst_i[1:0];
+         wreg_o <= `WriteDisable;
+         instvalid <= `InstInvalid;       
+         reg1_read_o <= 1'b0;
+         reg2_read_o <= 1'b0;
+         reg1_addr_o <= 8'b0;
+         reg2_addr_o <= 8'b11;        
+         imm <= `ZeroWord;    ;
+         mem_en_o<=1'b0;
+         mem_wr_o<=1'b0;
+         op16<=8'b0;
+         reg1_o<=8'b0;
+         reg2_o<=8'b0;
+         reg_state[4'h0]<= reg_state_reg[4'h0];
+         reg_state[4'h1]<= reg_state_reg[4'h1];
+         reg_state[4'h2]<= reg_state_reg[4'h2];
+         reg_state[4'h3]<= reg_state_reg[4'h3];
+       case (op)
+         `EXE_NOP_OP:
+         begin
+               aluop_o<=`ALU_NOP;
+         end
+         
+           `EXE_MOV:            
+         begin
+             aluop_o<=`ALU_MOV;
+//              alusel_o<=`EXE_RES_LOGIC;
+             reg1_read_o<=1'b1;
+             wd_o<={6'b0,inst_i[1:0]};
+             wreg_o<=`WriteEnable;
+             instvalid<=`InstValid;
+             reg_state[inst_i[1:0]]<=reg_state_reg[inst_i[1:0]]|4'b1000;
+         end     
+           
+           `EXE_ADD:
+           begin
+              aluop_o<=`ALU_ADD;
+//                 alusel_o<=`EXE_RES_LOGIC;
+              reg1_read_o<=1'b1;
+              reg2_read_o<=1'b1;
+              wd_o<={6'b0,inst_i[1:0]};
+              wreg_o<=`WriteEnable;
+              instvalid<=`InstValid;
+              reg_state[inst_i[1:0]]<=reg_state_reg[inst_i[1:0]]|4'b1000;
+           end
+           
+           `EXE_JMP:
+           begin
+                op16<=inst_i;
+                aluop_o<=`ALU_NOP;
+                instvalid<=`InstValid;
+           end
+           
+           `EXE_LOAD:
+           begin
+                 op16<=inst_i;
+                 aluop_o<=`ALU_NOP;
+                 instvalid<=`InstValid;
+           end
+           
+           `EXE_STORE:
+           begin
+                  op16<=inst_i;
+                  aluop_o<=`ALU_NOP;
+                  instvalid<=`InstValid;
+           end                
+                    
+         `EXE_ORI:            
+         begin
+               wreg_o <= `WriteEnable; // 写使能
+             aluop_o <= `EXE_OR_OP;
+//                  alusel_o <= `EXE_RES_LOGIC; 
+             reg1_read_o <= 1'b1;    // 读 rs
+             reg2_read_o <= 1'b0;    // 不读 rt      
+//               imm <= {16'h0, inst_i[15:0]};    // 立即数无符号扩展    
+             wd_o <= {6'b0,inst_i[1:0]};  // 写寄存器地址位 rt
+             instvalid <= `InstValid;    
+           end                              
+         default:
+             begin 
+             end
+       endcase
+	  end else   begin
+    	  branch_flag<=1'b0;
+          branch_op<=8'b0;
+          aluop_o <= `EXE_NOP_OP;
+//          alusel_o <= `EXE_RES_NOP;
+          wreg_o <= `WriteDisable;
+          instvalid <= `InstInvalid;       
+          reg1_read_o <= 1'b0;
+          reg2_read_o <= 1'b0;
+          reg1_addr_o <= 8'b0;
+          reg2_addr_o <= 8'b11;        
+          imm <= `ZeroWord;
+          mem_en_o<=1'b0;
+          mem_wr_o<=1'b0;
+          op16<=0; 
+          reg_state[4'h0]<= reg_state_reg[4'h0];
+          reg_state[4'h1]<= reg_state_reg[4'h1];
+          reg_state[4'h2]<= reg_state_reg[4'h2];
+          reg_state[4'h3]<= reg_state_reg[4'h3];                    
+          case(op16_code)   //for 16-bit inst addr
+              `EXE_JMP: begin
+                  aluop_o<=`ALU_NOP;
+                  branch_flag<=1'b1;
+                  branch_op<=inst_i;           
+              end
+              `EXE_LOAD:begin
+                  aluop_o<=`ALU_LOAD;
+//                   alusel_o<=`EXE_RES_LOGIC;
+                  reg1_o<=inst_i;  //LOAD指令的源数据在内存的地址
+                  wd_o=op16_addr_rd;
+                  wreg_o<=`WriteEnable;
+                  instvalid<=`InstValid;
+                  mem_en_o<=1'b1;
+                  mem_wr_o<=1'b0;
+                  reg_state[inst_i[1:0]]<=reg_state_reg[inst_i[1:0]]|4'b1000;
+              end
+              `EXE_STORE:begin
+                    aluop_o<=`ALU_STORE;
+//                 alusel_o<=`EXE_RES_LOGIC;
+                  reg2_o<=inst_i;  //STORE指令的源数据在内存的地址
+                  reg1_read_o<=1'b1;
+                  reg1_addr_o<=op16_addr_rs;
+                  instvalid<=`InstValid;
+                  mem_en_o<=1'b1;
+                  mem_wr_o<=1'b1;
+              end
+          endcase
+ 
 		end
 	end
-	
 
     // 确定运算的操作数1
 	always @ (*) begin
@@ -140,7 +263,12 @@ module id(
             reg1_o <= `ZeroWord;
         end
     end
-	
+    
+    //16位指令存储前8位
+    always @(posedge clk)begin
+        op16_reg<=op16;
+    end
+
     // 确定运算的操作数2
 	always @ (*) begin
 		if(rst == `RstEnable) begin

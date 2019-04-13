@@ -30,9 +30,9 @@ module ctrl(
         if (rst == `RstEnable) begin
             stall <= 6'b000000;
         end else if (stallreq_from_ex == `Stop) begin
-            stall <= 6'b001111;
+            stall <= 6'b111000;
         end else if (stallreq_from_id == `Stop) begin
-            stall <= 6'b000111;
+            stall <= 6'b110000;
         end else begin
             stall <= 6'b000000;
         end
