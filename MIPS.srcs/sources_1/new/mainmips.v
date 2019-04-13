@@ -239,7 +239,7 @@ module mainmips(
 		.mem_addr_o(ex_mem_addr_o),
 		
 		//ËÍµ½ctrkÄ£¿é
-		.stallreq(stallreq_id)
+		.stallreq(stallreq_ex)
 		
 	);
 
