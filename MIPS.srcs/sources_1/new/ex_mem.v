@@ -23,35 +23,50 @@
 module ex_mem(
 	input	wire				  clk,
 	input wire					  rst,
-    input wire[5:0]              stall,
+    input wire[5:0]               stall,
 
 	
-	// 来自执行阶段的信息
+	// 鏉ヨ嚜鎵ц闃舵鐨勪俊鎭?
 	input wire[`RegAddrBus]       ex_wd,
 	input wire                    ex_wreg,
     input wire[`RegBus]		      ex_wdata, 	
+	input wire                    ex_mem_ce,
+    input wire                    ex_mem_we,
+    input wire[`InstAddrBus]      ex_mem_addr,	
 	
-	// 送到访存阶段的信息
+	// 閫佸埌璁垮瓨闃舵鐨勪俊鎭?
     output reg[`RegAddrBus]       mem_wd,
 	output reg                    mem_wreg,
-    output reg[`RegBus]			  mem_wdata
+    output reg[`RegBus]			  mem_wdata,
+	output reg                    mem_ce,
+    output reg                    mem_we,
+    output reg[`InstAddrBus]      mem_addr
     );
-        // 时序逻辑
+        // 鏃跺簭閫昏緫
 	always @ (posedge clk) begin
-        // 如果重置的话，清除信息
+        // 濡傛灉閲嶇疆鐨勮瘽锛屾竻闄や俊鎭?
 		if(rst == `RstEnable) begin
 			mem_wd <= `NOPRegAddr;
 			mem_wreg <= `WriteDisable;
 		    mem_wdata <= `ZeroWord;	
-            // 不重置的话，把信息传递到MEM阶段
+			mem_ce<= `ChipDisable;
+		    mem_we<= `WriteDisable;
+		    mem_addr<= `NOPRegAddr;	
+            // 涓嶉噸缃殑璇濓紝鎶婁俊鎭紶閫掑埌MEM闃舵
 		end else if (stall[3] == `Stop && stall[4] == `NoStop ) begin
 		    mem_wd <= `NOPRegAddr;
 			mem_wreg <= `WriteDisable;
 		    mem_wdata <= `ZeroWord;	
+			mem_ce<= `ChipDisable;
+		    mem_we<= `WriteDisable;
+		    mem_addr<= `NOPRegAddr;	
 		end else if (stall[3] == `NoStop ) begin
 			mem_wd <= ex_wd;
 			mem_wreg <= ex_wreg;
-			mem_wdata <= ex_wdata;			
+			mem_wdata <= ex_wdata;		
+			mem_ce<=ex_mem_ce;
+			mem_we<=ex_mem_we;
+			mem_addr<=ex_mem_addr;			
 		end    //if
 	end      //always
 endmodule

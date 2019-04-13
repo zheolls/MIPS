@@ -24,20 +24,20 @@ module mips_top(
     input wire clk,
     input wire rst
     );
-    //连接指令存储器
+    //杩炴帴鎸囦护瀛樺偍鍣?
     wire[`InstAddrBus]  inst_addr;
     wire[`InstBus]      inst;
     wire                rom_ce;
     
     
-    //连接数据储存器
+    //杩炴帴鏁版嵁鍌ㄥ瓨鍣?
     wire[`DataAddrBus] data_addr;
     wire[`DataBus]     ram_data;
     wire ram_we;
     wire ram_ce;  
     wire[`DataBus]  data;
     
-    //实例化MIPS
+    //瀹炰緥鍖朚IPS
     mainmips mainmips0(
         .rst(rst),
         .clk(clk),
@@ -51,18 +51,18 @@ module mips_top(
         .ram_ce_o(ram_ce)
     );
     
-        //指令存储器实例化
+        //鎸囦护瀛樺偍鍣ㄥ疄渚嬪寲
     inst_rom inst_rom0(
         .ce(rom_ce),
         .addr(inst_addr),
         .inst(inst)
     );
     
-    //数据存储器实例化
+    //鏁版嵁瀛樺偍鍣ㄥ疄渚嬪寲
     data_ram data_ram0(
         .clk(clk),
         .addr(data_addr),
-        .data(ram_data),
+        .data_i(ram_data),
         .we(ram_we),
         .ce(ram_ce),
         .data_o(data)

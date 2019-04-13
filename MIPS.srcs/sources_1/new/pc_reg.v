@@ -24,19 +24,26 @@ module pc_reg(
     input wire rst,
     input wire clk,  
     input wire[5:0] stall, 
+    input wire[`InstAddrBus] pc_branch, 
+	input wire branch_flag,
     output reg[`InstAddrBus] pc,
     output reg ce
     );
-        // 指令存储器禁用的时候 PC值需要归零
+        // 鎸囦护瀛樺偍鍣ㄧ鐢ㄧ殑鏃跺?? PC鍊奸渶瑕佸綊闆?
 	always @ (posedge clk) begin
         if (ce == `ChipDisable) begin
-			pc <= 8'h00000000;
+			pc <= `ZeroWord;
+
 		end else if (stall[0] == `NoStop) begin
-	 		pc <= pc + 4'h1;
+		    if (branch_flag == `BranchValid ) begin
+		           pc <= pc_branch;
+		    end else begin
+	 		       pc <= pc + 8'b1;
+		    end
 		end
 	end
 	
-    // 复位的时候需要禁用指令存储器
+    // 澶嶄綅鐨勬椂鍊欓渶瑕佺鐢ㄦ寚浠ゅ瓨鍌ㄥ櫒
 	always @ (posedge clk) begin
 		if (rst == `RstEnable) begin
             ce <= `ChipDisable;

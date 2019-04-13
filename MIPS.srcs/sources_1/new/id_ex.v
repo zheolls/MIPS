@@ -21,26 +21,30 @@
 `include "defines.v" 
 
 module id_ex(
-	input	wire				  clk,
+	input wire				      clk,
 	input wire					  rst,
     
-    input wire[5:0]             stall,
+    input wire[5:0]               stall,
 	
-	// 从ID阶段传递过来的信息
+	// 浠嶪D闃舵浼犻?掕繃鏉ョ殑淇℃伅
 	input wire[`AluOpBus]         id_aluop,
 	input wire[`RegBus]           id_reg1,
 	input wire[`RegBus]           id_reg2,
 	input wire[`RegAddrBus]       id_wd,
 	input wire                    id_wreg,	
+	input wire                    id_mem_ce,
+	input wire                    id_mem_we,
 	
-	// 需要传递到EX阶段的信息
+	// 闇?瑕佷紶閫掑埌EX闃舵鐨勪俊鎭?
 	output reg[`AluOpBus]         ex_aluop,
 	output reg[`RegBus]           ex_reg1,
 	output reg[`RegBus]           ex_reg2,
 	output reg[`RegAddrBus]       ex_wd,
-	output reg                    ex_wreg
+	output reg                    ex_wreg,
+	output reg                    ex_mem_ce,
+	output reg                    ex_mem_we
     );
-        // 如果重置的话，进行以下操作清空信息
+        // 濡傛灉閲嶇疆鐨勮瘽锛岃繘琛屼互涓嬫搷浣滄竻绌轰俊鎭?
 	always @ (posedge clk) begin
 		if (rst == `RstEnable) begin
 			ex_aluop <= `EXE_NOP_OP;
@@ -48,19 +52,25 @@ module id_ex(
 			ex_reg2 <= `ZeroWord;
 			ex_wd <= `NOPRegAddr;
 			ex_wreg <= `WriteDisable;
-            // 如果不重置的话，把ID阶段的结果送到EX阶段
+			ex_mem_ce <= `ChipDisable;
+			ex_mem_we <= `WriteDisable;
+            // 濡傛灉涓嶉噸缃殑璇濓紝鎶奍D闃舵鐨勭粨鏋滈?佸埌EX闃舵
 		end else if (stall[2] == `Stop && stall[3] == `NoStop ) begin		
 		    ex_aluop <= `EXE_NOP_OP;
 			ex_reg1 <= `ZeroWord;
 			ex_reg2 <= `ZeroWord;
 			ex_wd <= `NOPRegAddr;
 			ex_wreg <= `WriteDisable;
+			ex_mem_ce <= `ChipDisable;
+			ex_mem_we <= `WriteDisable;
 		end else if (stall[2] == `NoStop) begin
 			ex_aluop <= id_aluop;
 			ex_reg1 <= id_reg1;
 			ex_reg2 <= id_reg2;
 			ex_wd <= id_wd;
-			ex_wreg <= id_wreg;		
+			ex_wreg <= id_wreg;
+			ex_mem_ce <= id_mem_ce;
+			ex_mem_we <= id_mem_we;				
 		end
 	end
 endmodule

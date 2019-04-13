@@ -28,66 +28,86 @@ module mainmips(
     output wire[`RegBus]          rom_addr_o,
     output wire                   rom_ce_o,
     input wire[`RegBus]           ram_data_i,
-    output reg[`RegBus]           ram_addr_o,
-    output reg[`RegBus]           ram_data_o,
-    output reg                    ram_we,
-    output reg                    ram_ce
+    output wire[`RegBus]           ram_addr_o,
+    output wire[`RegBus]           ram_data_o,
+    output wire                    ram_we_o,
+    output wire                    ram_ce_o
     
     );
     
-    // IF/ID模块的输出，连接到ID模块的输入
+   
+	//IF妯″潡鐨勮緭鍑猴紝杩炴帴鍒癐F/ID妯″潡
+	
+    // IF/ID妯″潡鐨勮緭鍑猴紝杩炴帴鍒癐D妯″潡鐨勮緭鍏?
 	wire[`InstAddrBus] pc;
 	wire[`InstAddrBus] id_pc_i;
 	wire[`InstBus] id_inst_i;
+
 	
-	// ID模块输出，连接到ID/EX模块的输入
+	// ID妯″潡杈撳嚭锛岃繛鎺ュ埌ID/EX妯″潡鐨勮緭鍏?
 	wire[`AluOpBus] id_aluop_o;
 	wire[`RegBus] id_reg1_o;
 	wire[`RegBus] id_reg2_o;
 	wire id_wreg_o;
 	wire[`RegAddrBus] id_wd_o;
+	wire               id_mem_ce_o;
+	wire               id_mem_we_o;
 	
-	// ID/EX模块输出，连接到EX模块的输入
+	//ID妯″潡杈撳嚭锛岃繛鎺ュ埌IF妯″潡鐨勮緭鍏?
+	wire       branch_flag_o;
+	wire[`InstAddrBus] branch_op_o;
+
+	
+	// ID/EX妯″潡杈撳嚭锛岃繛鎺ュ埌EX妯″潡鐨勮緭鍏?
 	wire[`AluOpBus] ex_aluop_i;
 	wire[`RegBus] ex_reg1_i;
 	wire[`RegBus] ex_reg2_i;
 	wire ex_wreg_i;
 	wire[`RegAddrBus] ex_wd_i;
+	wire           ex_mem_ce_i;
+	wire           ex_mem_we_i;
 	
-	// EX模块的输出，连接到EX/MEM模块的输入
+	// EX妯″潡鐨勮緭鍑猴紝杩炴帴鍒癊X/MEM妯″潡鐨勮緭鍏?
 	wire ex_wreg_o;
 	wire[`RegAddrBus] ex_wd_o;
 	wire[`RegBus] ex_wdata_o;
+	wire           ex_mem_ce_o;
+	wire           ex_mem_we_o;
+	wire[`InstAddrBus] ex_mem_addr_o;
 
-	// EX/MEM模块的输出，连接到MEM模块的输入
+	// EX/MEM妯″潡鐨勮緭鍑猴紝杩炴帴鍒癕EM妯″潡鐨勮緭鍏?
 	wire mem_wreg_i;
 	wire[`RegAddrBus] mem_wd_i;
 	wire[`RegBus] mem_wdata_i;
+	wire           mem_ce_i;
+	wire           mem_we_i;
+	wire[`InstAddrBus]   mem_addr_i;
 
-	// MEM模块的输出，连接到MEM/WB模块的输入
+	// MEM妯″潡鐨勮緭鍑猴紝杩炴帴鍒癕EM/WB妯″潡鐨勮緭鍏?
 	wire mem_wreg_o;
 	wire[`RegAddrBus] mem_wd_o;
 	wire[`RegBus] mem_wdata_o;
 	
-	// MEM/WB模块的输出，连接到WB模块的输入
+	// MEM/WB妯″潡鐨勮緭鍑猴紝杩炴帴鍒癢B妯″潡鐨勮緭鍏?
 	wire wb_wreg_i;
 	wire[`RegAddrBus] wb_wd_i;
 	wire[`RegBus] wb_wdata_i;
 	
-	// WB模块的输出，连接到ID阶段RegFile模块的输入
+	// WB妯″潡鐨勮緭鍑猴紝杩炴帴鍒癐D闃舵RegFile妯″潡鐨勮緭鍏?
     wire reg1_read;
     wire reg2_read;
     wire[`RegBus] reg1_data;
     wire[`RegBus] reg2_data;
     wire[`RegAddrBus] reg1_addr;
     wire[`RegAddrBus] reg2_addr;
-    
-    //流水线暂停控制
+	assign rom_addr_o = pc;
+	
+    //娴佹按绾挎殏鍋滄帶鍒?
     wire stallreq_id;
     wire stallreq_ex;
     wire[5:0] stall;
     
-    //流水线暂停控制实例化
+    //娴佹按绾挎殏鍋滄帶鍒跺疄渚嬪寲
     ctrl ctrl0(
         .rst(rst),
         .stallreq_from_id(stallreq_id),
@@ -96,18 +116,21 @@ module mainmips(
     );
     
     
-  // PC_REG 的实例化
+  // PC_REG 鐨勫疄渚嬪寲
 	pc_reg pc_reg0(
 		.clk(clk),
 		.rst(rst),
+		.stall(stall),
 		.pc(pc),
-		.ce(rom_ce_o)	
-			
+		.branch_flag(branch_flag_o),
+		.pc_branch(branch_op_o),
+		.ce(rom_ce_o)
+
 	);
 	
   assign rom_addr_o = pc;
 
-  // IF/ID模块的实例化
+  // IF/ID妯″潡鐨勫疄渚嬪寲
 	if_id if_id0(
 		.clk(clk),
 		.rst(rst),
@@ -119,33 +142,38 @@ module mainmips(
  	
 	);
 	
-	// ID模块实例化
+	// ID妯″潡瀹炰緥鍖?
 	id id0(
+		.clk(clk),
 		.rst(rst),
 		.pc_i(id_pc_i),
 		.inst_i(id_inst_i),
 
 		.reg1_data_i(reg1_data),
 		.reg2_data_i(reg2_data),
-
-		// 来自REGFILE的数据输入
+		//閫佸埌IF娈电殑杈撳嚭
+		.branch_flag(branch_flag_o),
+		.branch_addr(branch_op_o),
+		// 鏉ヨ嚜REGFILE鐨勬暟鎹緭鍏?
 		.reg1_read_o(reg1_read),
 		.reg2_read_o(reg2_read), 	  
 
 		.reg1_addr_o(reg1_addr),
 		.reg2_addr_o(reg2_addr), 
 	  
-		// 送到ID/EX模块的数据
+		// 閫佸埌ID/EX妯″潡鐨勬暟鎹?
 		.aluop_o(id_aluop_o),
 //		.alusel_o(id_alusel_o),
 		.reg1_o(id_reg1_o),
 		.reg2_o(id_reg2_o),
 		.wd_o(id_wd_o),
 		.wreg_o(id_wreg_o),
+		.mem_ce_o(id_mem_ce_o),
+		.mem_we_o(id_mem_we_o),
 		.stallreq(stallreq_id)
 	);
 
-  //? RegFile模块的实例化
+  //? RegFile妯″潡鐨勫疄渚嬪寲
 	regfile regfile1(
 		.clk (clk),
 		.rst (rst),
@@ -160,94 +188,119 @@ module mainmips(
 		.rdata2 (reg2_data)
 	);
 
-	// ID/EX模块的实例化
+	// ID/EX妯″潡鐨勫疄渚嬪寲
 	id_ex id_ex0(
 		.clk(clk),
 		.rst(rst),
 		
-		// 来自ID阶段的数据
+		// 鏉ヨ嚜ID闃舵鐨勬暟鎹?
 		.id_aluop(id_aluop_o),
 //		.id_alusel(id_alusel_o),
 		.id_reg1(id_reg1_o),
 		.id_reg2(id_reg2_o),
 		.id_wd(id_wd_o),
 		.id_wreg(id_wreg_o),
+		.id_mem_ce(id_mem_ce_o),
+		.id_mem_we(id_mem_we_o),
 	
-		// 要送到EX阶段的数据
+		// 瑕侀?佸埌EX闃舵鐨勬暟鎹?
 		.ex_aluop(ex_aluop_i),
 //		.ex_alusel(ex_alusel_i),
 		.ex_reg1(ex_reg1_i),
 		.ex_reg2(ex_reg2_i),
 		.ex_wd(ex_wd_i),
 		.ex_wreg(ex_wreg_i),
+		.ex_mem_ce(ex_mem_ce_i),
+		.ex_mem_we(ex_mem_we_i),
 		.stall(stall)
 	);		
 	
-	// EX模块的实例化
+	// EX妯″潡鐨勫疄渚嬪寲
 	ex ex0(
 		.rst(rst),
 	
-		// 来自ID/EX的数据
+		// 鏉ヨ嚜ID/EX鐨勬暟鎹?
 		.aluop_i(ex_aluop_i),
 //		.alusel_i(ex_alusel_i),
 		.reg1_i(ex_reg1_i),
 		.reg2_i(ex_reg2_i),
 		.wd_i(ex_wd_i),
 		.wreg_i(ex_wreg_i),
+		.mem_ce_i(ex_mem_ce_i),
+		.mem_we_i(ex_mem_we_i),
 	  
-	  // EX阶段的结果，输出到EX/MEM的数据
+	  // EX闃舵鐨勭粨鏋滐紝杈撳嚭鍒癊X/MEM鐨勬暟鎹?
 		.wd_o(ex_wd_o),
 		.wreg_o(ex_wreg_o),
 		.wdata_o(ex_wdata_o),
-		.stallreq(stallreq_ex)
+		.stallreq(stallreq_ex),
+		.mem_ce_o(ex_mem_ce_o),
+		.mem_we_o(ex_mem_we_o),
+		.mem_addr_o(ex_mem_addr_o)
 	);
 
-  // EX/MEM的实例化
+  // EX/MEM鐨勫疄渚嬪寲
   ex_mem ex_mem0(
 		.clk(clk),
 		.rst(rst),
 	  
-		// 来自EX模块的数据	
+		// 鏉ヨ嚜EX妯″潡鐨勬暟鎹?	
 		.ex_wd(ex_wd_o),
 		.ex_wreg(ex_wreg_o),
 		.ex_wdata(ex_wdata_o),
-	
+	    .ex_mem_ce(ex_mem_ce_o),
+	    .ex_mem_we(ex_mem_we_o),
+	    .ex_mem_addr(ex_mem_addr_o),
 
-		// 将要送到MEM阶段的数据
+		// 灏嗚閫佸埌MEM闃舵鐨勬暟鎹?
 		.mem_wd(mem_wd_i),
 		.mem_wreg(mem_wreg_i),
 		.mem_wdata(mem_wdata_i),
-        
+        .mem_ce(mem_ce_i),
+        .mem_we(mem_we_i),
+        .mem_addr(mem_addr_i),
         .stall(stall)
 						       	
 	);
 	
-  // MEM模块的实例化
+  // MEM妯″潡鐨勫疄渚嬪寲
 	mem mem0(
 		.rst(rst),
 	
-		// 来自EX/MEM模块的数据
+		// 鏉ヨ嚜EX/MEM妯″潡鐨勬暟鎹?
 		.wd_i(mem_wd_i),
 		.wreg_i(mem_wreg_i),
 		.wdata_i(mem_wdata_i),
+		.mem_ce(mem_ce_i),
+		.mem_we(mem_we_i),
+		.mem_addr_i(mem_addr_i),
+		
+	    //鎺ュ彈鏁版嵁瀛樺偍鍣ㄧ殑鏁版嵁
+	    .mem_read_data(ram_data_i),
 	  
-		// 要送到MEM/WB模块的数据
+	  //閫佸埌鏁版嵁瀛樺偍鍣?
+        .mem_ce_o(ram_ce_o),
+        .mem_we_o(ram_we_o),
+        .mem_addr_o(ram_addr_o),	  
+	    .mem_data_o(ram_data_o),
+	  
+		// 瑕侀?佸埌MEM/WB妯″潡鐨勬暟鎹?
 		.wd_o(mem_wd_o),
 		.wreg_o(mem_wreg_o),
 		.wdata_o(mem_wdata_o)
 	);
 
-  // MEM/WB 模块的实例化
+  // MEM/WB 妯″潡鐨勫疄渚嬪寲
 	mem_wb mem_wb0(
 		.clk(clk),
 		.rst(rst),
 
-		// 来自MEM的数据
+		// 鏉ヨ嚜MEM鐨勬暟鎹?
 		.mem_wd(mem_wd_o),
 		.mem_wreg(mem_wreg_o),
 		.mem_wdata(mem_wdata_o),
 	
-		// 将要送到RegFile的数据
+		// 灏嗚閫佸埌RegFile鐨勬暟鎹?
 		.wb_wd(wb_wd_i),
 		.wb_wreg(wb_wreg_i),
 		.wb_wdata(wb_wdata_i),
