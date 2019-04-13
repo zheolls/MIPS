@@ -55,7 +55,10 @@ module ex(
 			mem_wr_o<= `WriteEnable;
 			mem_addr_o<= `NOPRegAddr;
 			wdata_o<= `ZeroWord;
+			stallreq<=`NoStop;
 		end else begin
+			mem_addr_o <= `NOPRegAddr;
+			wdata_o <= `ZeroWord;
 		 // �?要写入的寄存器的地址
             wd_o <= wd_i;          
             // 寄存器写使能
@@ -78,8 +81,8 @@ module ex(
 				    mem_addr_o<=reg1_i;
 				end
 				`ALU_STORE:begin
-				    mem_addr_o<=reg1_i;
-				    wdata_o<=reg2_i;
+				    mem_addr_o<=reg2_i;
+				    wdata_o<=reg1_i;
 				end
 				default: begin
 					wdata_o <= `ZeroWord;

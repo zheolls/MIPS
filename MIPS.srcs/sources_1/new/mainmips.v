@@ -36,13 +36,11 @@ module mainmips(
     );
     
 	//IF模块的输出，连接到IF/ID模块
-    wire            if_is_16op;
 	
     // IF/ID模块的输出，连接到ID模块的输入
 	wire[`InstAddrBus] pc;
 	wire[`InstAddrBus] id_pc_i;
 	wire[`InstBus] id_inst_i;
-	wire           id_is_16op_i;
 
 	
 	// ID模块输出，连接到ID/EX模块的输入
@@ -51,13 +49,13 @@ module mainmips(
 	wire[`RegBus] id_reg2_o;
 	wire id_wreg_o;
 	wire[`RegAddrBus] id_wd_o;
+	wire               id_mem_en_o;
+	wire               id_mem_wr_o;
 	
 	//ID模块输出，连接到IF模块的输入
 	wire       branch_flag_o;
 	wire[`InstAddrBus] branch_op_o;
-	wire               id_mem_en_o;
-    wire               id_mem_wr_o;
-    wire               id_is_16op_o;
+
 	
 	// ID/EX模块输出，连接到EX模块的输入
 	wire[`AluOpBus] ex_aluop_i;
@@ -124,9 +122,8 @@ module mainmips(
 		.pc(pc),
 		.branch_flag(branch_flag_o),
 		.pc_branch(branch_op_o),
-		.ce(rom_ce_o),
-		.is_16op_i(id_is_16op_o),
-		.is_16op_o(if_is_16op)	
+		.ce(rom_ce_o)
+
 	);
 	
   assign rom_addr_o = pc;
@@ -139,25 +136,22 @@ module mainmips(
 		.if_inst(rom_data_i),
 		.id_pc(id_pc_i),
 		.id_inst(id_inst_i),
-        .stall(stall),
-		.is_16op_i(if_is_16op),
-		.is_16op_o(id_is_16op_i)
+        .stall(stall)
  	
 	);
 	
 	// ID模块实例化
 	id id0(
+		.clk(clk),
 		.rst(rst),
 		.pc_i(id_pc_i),
 		.inst_i(id_inst_i),
 
 		.reg1_data_i(reg1_data),
 		.reg2_data_i(reg2_data),
-		.is_16op_i(id_is_16op_i),
 		//送到IF段的输出
 		.branch_flag(branch_flag_o),
 		.branch_op(branch_op_o),
-		.is_16op(id_is_16op_o),
 		// 来自REGFILE的数据输入
 		.reg1_read_o(reg1_read),
 		.reg2_read_o(reg2_read), 	  

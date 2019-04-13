@@ -66,9 +66,10 @@
 `define NOPRegAddr 8'b00000000
 //操作码
 `define NOP_16OP 4'b0000
-`define EXE_NOP_OP 4'b1111
+`define EXE_NOP_OP 4'0000
 `define EXE_RES_NOP 2'b11
 
+`define ALU_NOP 4'b0000
 `define ALU_MOV 4'b0001
 `define ALU_ADD 4'b0010
 `define ALU_JMP 4'b0011

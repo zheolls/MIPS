@@ -24,20 +24,18 @@ module pc_reg(
     input wire rst,
     input wire clk,  
     input wire[5:0] stall, 
-    input wire[`InstAddrBus] pc_branch,  
+    input wire[`InstAddrBus] pc_branch, 
+	input wire branch_flag,
     output reg[`InstAddrBus] pc,
     output reg ce,
-	output reg is_16op_o
 
     );
         // 指令存储器禁用的时候 PC值需要归零
 	always @ (posedge clk) begin
         if (ce == `ChipDisable) begin
-			pc <= 8'h00000000;
-			is_16op_o<=1'b0;
+			pc <= `ZeroWord;
 
 		end else if (stall[0] == `NoStop) begin
-			is_16op_o <= is_16op_i;
 		    if (branch_flag == `BranchValid ) begin
 		           pc <= pc_branch;
 		    end else begin
@@ -50,7 +48,6 @@ module pc_reg(
 	always @ (posedge clk) begin
 		if (rst == `RstEnable) begin
             ce <= `ChipDisable;
-			is_16op_o <= `Is8Inst;
         end 
         else begin
             ce<= `ChipEnable;
