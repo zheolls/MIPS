@@ -40,6 +40,15 @@ module id(
 	output reg                    branch_flag,
 	output reg[`InstAddrBus]      branch_addr,
 	
+	//处于执行阶段的指令的运算结果
+	input wire     				  ex_wreg_i,
+	input wire[`RegBus]			  ex_wdata_i,
+	input wire[`RegAddrBus]       ex_wd_i,
+	//处于访存阶段的指令的运算结果
+	input wire                    mem_wreg_i,
+	input wire[`RegBus]           mem_wdata_i,
+	input wire[`RegAddrBus]       mem_wd_i,
+	
 	// 送到EX阶段的信�?
     output reg[`AluOpBus]         aluop_o,  // ALU操作�?
     output reg[`RegBus]           reg1_o,   // 源操作数 1
@@ -87,188 +96,187 @@ module id(
 
      // 如果不重置则进行以下操作
 	always @ (*) begin	
-        if (rst == `RstEnable) begin
-            branch_flag <= `BranchInvalid;
-            branch_addr <= `NOPRegAddr;
-            aluop_o <= `EXE_NOP_OP;
-//			alusel_o <= `EXE_RES_NOP;
-            wd_o <= `NOPRegAddr;
-			wreg_o <= `WriteDisable;
-            instvalid <= `InstValid;
-			reg1_read_o <= `ReadDisable;
-			reg2_read_o <= `ReadDisable;
-			reg1_addr_o <= `NOPRegAddr;
-			reg2_addr_o <= `NOPRegAddr;
-			imm <= `ZeroWord;
-			mem_ce_o <= `ChipDisable;
-			mem_we_o <= `WriteDisable;;
-			op16 <= `NOP_16OP;
-			reg1_o <= `NOPRegAddr;
-			reg2_o <= `NOPRegAddr;
-			stallreq<=`NoStop;
-			reg_state[4'h0] <= 4'b0;
-			reg_state[4'h1] <= 4'b0;
-			reg_state[4'h2] <= 4'b0;
-			reg_state[4'h3] <= 4'b0;
-			nowrd <= 2'b0;
-     // 如果不重置则进行以下操作
-	  end else if(op16_reg==8'b0) begin
-         // 这里其实是default里面的�??
-       //   我们先看下面的case
-         branch_flag <= `BranchInvalid;
-         branch_addr <= `NOPRegAddr;
-         aluop_o <= `EXE_NOP_OP;
-//            alusel_o <= `EXE_RES_NOP;
-         wd_o <= inst_i[1:0];
-         wreg_o <= `WriteDisable;
-         instvalid <= `InstInvalid;       
-         reg1_read_o <= `ReadDisable;
-         reg2_read_o <=  `ReadDisable;
-         reg1_addr_o <= `ARegAddr;
-         reg2_addr_o <= `BRegAddr;        
-         imm <= `ZeroWord;    ;
-         mem_ce_o <= `ChipDisable;
-         mem_we_o <= `WriteDisable;
-         op16 <= `NOP_16OP;
-         reg1_o <= `NOPRegAddr;
-         reg2_o <= `NOPRegAddr;
-         reg_state[4'h0] <= reg_state_reg[4'h0];
-         reg_state[4'h1] <= reg_state_reg[4'h1];
-         reg_state[4'h2] <= reg_state_reg[4'h2];
-         reg_state[4'h3] <= reg_state_reg[4'h3];
-		 stallreq <= 0;
-       case (op)
-         `EXE_NOP_OP:
-         begin
-            aluop_o<=`ALU_NOP;
-         end
-         
-           `EXE_MOV:            
-				begin
-					if(reg_state_reg[rs]!=4'b0)begin
-						stallreq<=`Stop;
-					end else begin
-						aluop_o <= `ALU_MOV;
-						reg1_read_o <= `ReadEnable;
-						wd_o <= {6'b0,inst_i[1:0]};
-						wreg_o <= `WriteEnable;
-						instvalid <=`InstValid;
-						reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
-					end
-				end     
-           
-           `EXE_ADD:
-				begin
-					if(reg_state_reg[4'b0]!=4'b0|reg_state_reg[4'b0011]!=4'b0) begin
-						stallreq<=`Stop;
-					end else begin
-						aluop_o <= `ALU_ADD;
-						reg1_read_o <= `ReadEnable;
-						reg2_read_o <= `ReadEnable;
-						wd_o <= {6'b0,inst_i[1:0]};
-						wreg_o <= `WriteEnable;
-						instvalid <= `InstValid;
-						reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
-					end
-				end
-           
-           `EXE_JMP:
-			    begin
-					if(reg_state_reg[rs]!=4'b0)begin
-                          stallreq<=`Stop;
-					end else begin
-						op16 <= inst_i;
-						aluop_o <= `ALU_NOP;
-						instvalid <= `InstValid;
-					end
-			    end
-           
-           `EXE_LOAD:
-				begin
-					if(reg_state_reg[rs]!=4'b0)begin
-						 stallreq<=`Stop;
-					end else begin
-						op16 <=inst_i;
-						aluop_o <=`ALU_NOP;
-						instvalid <=`InstValid;
-					end
-				end
-           
-           `EXE_STORE:
-				begin
-					if(reg_state_reg[rs]!=4'b0)begin
-						 stallreq<=`Stop;
-					end else begin
-						op16 <=inst_i;
-						aluop_o <=`ALU_NOP;
-						instvalid <=`InstValid;
-					end
-				end                
-                    
-         `EXE_ORI:            
-         begin
-               wreg_o <= `WriteEnable; // 写使�?
-             aluop_o <= `EXE_OR_OP;
-//                  alusel_o <= `EXE_RES_LOGIC; 
-             reg1_read_o <= `ReadEnable;    // �?rs
-             reg2_read_o <= `ReadDisable;    // 不读 rt      
-//               imm <= {16'h0, inst_i[15:0]};    // 立即数无符号扩展    
-             wd_o <= {6'b0,inst_i[1:0]};  // 写寄存器地址�?rt
-             instvalid <= `InstValid;    
-           end                              
-         default:
-             begin 
-             end
-       endcase
-	  end else   begin
-    	  branch_flag <= `BranchInvalid;
-          branch_addr <= `NOPRegAddr;
-          aluop_o <= `EXE_NOP_OP;
-//          alusel_o <= `EXE_RES_NOP;
-          wreg_o <= `WriteDisable;
-          instvalid <= `InstInvalid;       
-          reg1_read_o <= `ReadDisable;
-          reg2_read_o <= `ReadDisable;
-          reg1_addr_o <= `ARegAddr;
-          reg2_addr_o <= `BRegAddr;        
-          imm <= `ZeroWord;
-          mem_ce_o <= `ChipDisable;
-          mem_we_o <= `WriteDisable;
-          op16 <= `NOP_16OP; 
-          reg_state[4'h0] <= reg_state_reg[4'h0];
-          reg_state[4'h1] <= reg_state_reg[4'h1];
-          reg_state[4'h2] <= reg_state_reg[4'h2];
-          reg_state[4'h3] <= reg_state_reg[4'h3];                    
-          case(op16_code)   //for 16-bit inst addr
-              `EXE_JMP: begin
-                  aluop_o <= `ALU_NOP;
-                  branch_flag <= `BranchValid;
-                  branch_addr <= inst_i;           
-              end
-              `EXE_LOAD:begin
-                  aluop_o <= `ALU_LOAD;
-//                   alusel_o<=`EXE_RES_LOGIC;
-                  reg1_o<=inst_i;  //LOAD指令的源数据在内存的地址
-                  wd_o <= op16_addr_rd;
-                  wreg_o <= `WriteEnable;
-                  instvalid<=`InstValid;
-                  mem_ce_o <= `ChipEnable;
-                  mem_we_o <= `WriteDisable;
-                  reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
-              end
-              `EXE_STORE:begin
-                    aluop_o <= `ALU_STORE;
-//                 alusel_o<=`EXE_RES_LOGIC;
-                  reg2_o <= inst_i;  //STORE指令的源数据在内存的地址
-                  reg1_read_o <= `ReadEnable;
-                  reg1_addr_o <= op16_addr_rs;
-                  instvalid <= `InstValid;
-                  mem_ce_o <= `ChipEnable;
-                  mem_we_o <= `WriteEnable;
-              end
-          endcase
- 
-		end
+      if ( rst == `RstEnable )
+             begin
+                branch_flag <= `BranchInvalid;
+                branch_addr <= `NOPRegAddr;
+                aluop_o <= `EXE_NOP_OP;
+                wd_o <= `NOPRegAddr;
+                wreg_o <= `WriteDisable;
+                instvalid <= `InstValid;
+                reg1_read_o <= `ReadDisable;
+                reg2_read_o <= `ReadDisable;
+                reg1_addr_o <= `NOPRegAddr;
+                reg2_addr_o <= `NOPRegAddr;
+                imm <= `ZeroWord;
+                mem_ce_o <= `ChipDisable;
+                mem_we_o <= `WriteDisable;;
+                op16 <= `NOP_16OP;
+                reg1_o <= `NOPRegAddr;
+                reg2_o <= `NOPRegAddr;
+                stallreq<=`NoStop;
+                reg_state[4'h0] <= 4'b0;
+                reg_state[4'h1] <= 4'b0;
+                reg_state[4'h2] <= 4'b0;
+                reg_state[4'h3] <= 4'b0;
+                nowrd <= 2'b0;
+          end 
+	  else if ( op16_reg== `ZeroWord ) 
+           begin
+             // 这里其实是default里面的�??
+           //   我们先看下面的case
+             branch_flag <= `BranchInvalid;
+             branch_addr <= `NOPRegAddr;
+             aluop_o <= `EXE_NOP_OP;
+             wd_o <= inst_i[1:0];
+             wreg_o <= `WriteDisable;
+             instvalid <= `InstInvalid;       
+             reg1_read_o <= `ReadDisable;
+             reg2_read_o <=  `ReadDisable;
+             reg1_addr_o <= `ARegAddr;
+             reg2_addr_o <= `BRegAddr;        
+             imm <= `ZeroWord;    ;
+             mem_ce_o <= `ChipDisable;
+             mem_we_o <= `WriteDisable;
+             op16 <= `NOP_16OP;
+             reg1_o <= `NOPRegAddr;
+             reg2_o <= `NOPRegAddr;
+             reg_state[4'h0] <= reg_state_reg[4'h0];
+             reg_state[4'h1] <= reg_state_reg[4'h1];
+             reg_state[4'h2] <= reg_state_reg[4'h2];
+             reg_state[4'h3] <= reg_state_reg[4'h3];
+             stallreq <= 0;
+             case (op)
+              `EXE_NOP_OP:
+                 begin
+                    aluop_o<=`ALU_NOP;
+                 end
+             
+               `EXE_MOV:            
+                    begin
+                        if(reg_state_reg[rs]!=4'b0)begin
+                            stallreq<=`Stop;
+                        end else begin
+                            aluop_o <= `ALU_MOV;
+                            reg1_read_o <= `ReadEnable;
+                            wd_o <= {6'b0,inst_i[1:0]};
+                            wreg_o <= `WriteEnable;
+                            instvalid <=`InstValid;
+                            reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
+                        end
+                    end     
+               
+               `EXE_ADD:
+                    begin
+                        if(reg_state_reg[4'b0]!=4'b0|reg_state_reg[4'b0011]!=4'b0) begin
+                            stallreq<=`Stop;
+                        end else begin
+                            aluop_o <= `ALU_ADD;
+                            reg1_read_o <= `ReadEnable;
+                            reg2_read_o <= `ReadEnable;
+                            wd_o <= {6'b0,inst_i[1:0]};
+                            wreg_o <= `WriteEnable;
+                            instvalid <= `InstValid;
+                            reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
+                        end
+                    end
+               
+               `EXE_JMP:
+                    begin
+                        if(reg_state_reg[rs]!=4'b0)begin
+                              stallreq<=`Stop;
+                        end else begin
+                            op16 <= inst_i;
+                            aluop_o <= `ALU_NOP;
+                            instvalid <= `InstValid;
+                        end
+                    end
+               
+               `EXE_LOAD:
+                    begin
+                        if(reg_state_reg[rs]!=4'b0)begin
+                             stallreq<=`Stop;
+                        end else begin
+                            op16 <=inst_i;
+                            aluop_o <=`ALU_NOP;
+                            instvalid <=`InstValid;
+                        end
+                    end
+               
+               `EXE_STORE:
+                    begin
+                        if(reg_state_reg[rs]!=4'b0)begin
+                             stallreq<=`Stop;
+                        end else begin
+                            op16 <=inst_i;
+                            aluop_o <=`ALU_NOP;
+                            instvalid <=`InstValid;
+                        end
+                    end                
+                        
+             `EXE_ORI:            
+                 begin
+                       wreg_o <= `WriteEnable; // 写使�?
+                     aluop_o <= `EXE_OR_OP;
+                     reg1_read_o <= `ReadEnable;    // �?rs
+                     reg2_read_o <= `ReadDisable;    // 不读 rt      
+                     wd_o <= {6'b0,inst_i[1:0]};  // 写寄存器地址�?rt
+                     instvalid <= `InstValid;    
+                   end                              
+             default:
+                 begin 
+                 end
+           endcase
+          end 
+	  else   
+           begin
+              branch_flag <= `BranchInvalid;
+              branch_addr <= `NOPRegAddr;
+              aluop_o <= `EXE_NOP_OP;
+              wreg_o <= `WriteDisable;
+              instvalid <= `InstInvalid;       
+              reg1_read_o <= `ReadDisable;
+              reg2_read_o <= `ReadDisable;
+              reg1_addr_o <= `ARegAddr;
+              reg2_addr_o <= `BRegAddr;        
+              imm <= `ZeroWord;
+              mem_ce_o <= `ChipDisable;
+              mem_we_o <= `WriteDisable;
+              op16 <= `NOP_16OP; 
+              reg_state[4'h0] <= reg_state_reg[4'h0];
+              reg_state[4'h1] <= reg_state_reg[4'h1];
+              reg_state[4'h2] <= reg_state_reg[4'h2];
+              reg_state[4'h3] <= reg_state_reg[4'h3];                    
+              case(op16_code)   //for 16-bit inst addr
+                  `EXE_JMP: begin
+                      aluop_o <= `ALU_NOP;
+                      branch_flag <= `BranchValid;
+                      branch_addr <= inst_i;           
+                  end
+                  `EXE_LOAD:begin
+                      aluop_o <= `ALU_LOAD;
+    //                   alusel_o<=`EXE_RES_LOGIC;
+                      reg1_o<=inst_i;  //LOAD指令的源数据在内存的地址
+                      wd_o <= op16_addr_rd;
+                      wreg_o <= `WriteEnable;
+                      instvalid<=`InstValid;
+                      mem_ce_o <= `ChipEnable;
+                      mem_we_o <= `WriteDisable;
+                      reg_state[inst_i[1:0]] <= reg_state_reg[inst_i[1:0]]|4'b1000;
+                  end
+                  `EXE_STORE:begin
+                        aluop_o <= `ALU_STORE;
+    //                 alusel_o<=`EXE_RES_LOGIC;
+                      reg2_o <= inst_i;  //STORE指令的源数据在内存的地址
+                      reg1_read_o <= `ReadEnable;
+                      reg1_addr_o <= op16_addr_rs;
+                      instvalid <= `InstValid;
+                      mem_ce_o <= `ChipEnable;
+                      mem_we_o <= `WriteEnable;
+                  end
+              endcase
+     
+            end
 	end
 
 	
@@ -277,6 +285,12 @@ module id(
 	always @ (*) begin
         if(rst == `RstEnable) begin
 			reg1_o <= `ZeroWord;
+		end else if ((reg1_read_o == `ReadEnable) && (ex_wreg_i == `WriteEnable)
+			&&(ex_wd_i==reg1_addr_o)) begin
+			reg1_o <= ex_wdata_i;
+		end else if ((reg1_read_o == `ReadEnable) && (mem_wreg_i == `WriteEnable)
+			&&(mem_wd_i==reg1_addr_o)) begin
+			reg1_o <= mem_wdata_i;	
         end else if(reg1_read_o == `ReadEnable) begin
             reg1_o <= reg1_data_i;
             // 若没�?读使能，则把立即数作为数据输出为 操作�?
@@ -295,6 +309,12 @@ module id(
 	always @ (*) begin
 		if(rst == `RstEnable) begin
 			reg2_o <= `ZeroWord;
+		end else if ((reg2_read_o == `ReadEnable) && (ex_wreg_i == `WriteEnable)
+			&&(ex_wd_i==reg2_addr_o)) begin
+			reg2_o <= ex_wdata_i;
+		end else if ((reg2_read_o == `ReadEnable) && (mem_wreg_i == `WriteEnable)
+			&&(mem_wd_i==reg2_addr_o)) begin
+			reg2_o <= mem_wdata_i;
         end else if(reg2_read_o == `ReadEnable) begin
             reg2_o <= reg2_data_i;
             // 若没�?读使能，则把立即数作为数据输出为 操作�?

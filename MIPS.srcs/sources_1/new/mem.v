@@ -33,6 +33,8 @@ module mem(
 	
 	//访存
 	input wire[`RegBus]       mem_read_data,
+
+	
 	output reg                 mem_ce_o,
 	output reg                 mem_we_o,
 	output reg[`InstAddrBus] mem_addr_o,
@@ -60,14 +62,18 @@ module mem(
 			wdata_o <= wdata_i;
 			mem_ce_o <= mem_ce;
 			mem_we_o <= mem_we;
-			mem_addr_o <= mem_addr_i;
-			if(mem_ce)begin
-			    if(mem_we)begin
-			          mem_data_o<=wdata_i;
-			    end else begin
-			         wdata_o<=mem_read_data;
-			    end
-			end
+            if (mem_ce == `ChipEnable && mem_we == `WriteEnable ) begin
+                mem_data_o <= wdata_i;   
+                mem_addr_o <= mem_addr_i;
+            end else if (mem_ce == `ChipEnable ) begin
+                wdata_o<=mem_read_data;
+                mem_addr_o <= mem_addr_i;
+                mem_data_o <= `ZeroWord;
+            end else
+            begin
+                mem_data_o <= `ZeroWord;
+                mem_addr_o <= `NOPRegAddr;
+            end
 		end    //if
 	end      //always
 endmodule

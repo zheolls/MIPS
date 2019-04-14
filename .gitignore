@@ -46,3 +46,5 @@ MIPS.cache/wt/synthesis.wdf
 MIPS.cache/wt/project.wpc
 MIPS.cache/wt/java_command_handlers.wdf
 MIPS.cache/wt/gui_handlers.wdf
+*.wdf
+*.wdf

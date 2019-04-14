@@ -41,7 +41,7 @@ module mips_top(
     mainmips mainmips0(
         .rst(rst),
         .clk(clk),
-        .rom_data_i(data_addr),
+        .rom_data_i(inst),
         .ram_data_i(data),
         .rom_ce_o(rom_ce),
         .rom_addr_o(inst_addr),

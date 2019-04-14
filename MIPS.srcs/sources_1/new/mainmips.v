@@ -74,6 +74,12 @@ module mainmips(
 	wire           ex_mem_ce_o;
 	wire           ex_mem_we_o;
 	wire[`InstAddrBus] ex_mem_addr_o;
+	
+	// EX模块的输出，连接到ID模块的输入；
+	
+	wire ex_id_wreg;
+	wire[`RegAddrBus] ex_id_wd;
+	wire[`RegBus] ex_id_wdata;
 
 	// EX/MEM模块的输出，连接到MEM模块的输�?
 	wire mem_wreg_i;
@@ -87,6 +93,11 @@ module mainmips(
 	wire mem_wreg_o;
 	wire[`RegAddrBus] mem_wd_o;
 	wire[`RegBus] mem_wdata_o;
+	
+	// MEM模块的输出，连接到ID模块的输入；
+	wire[`RegBus] mem_id_wdata;
+	wire[`RegAddrBus] mem_id_wd;
+	wire mem_id_wreg;
 	
 	// MEM/WB模块的输出，连接到WB模块的输�?
 	wire wb_wreg_i;
@@ -154,6 +165,13 @@ module mainmips(
 		//送到IF段的输出
 		.branch_flag(branch_flag_o),
 		.branch_addr(branch_op_o),
+		.mem_wdata_i(mem_wdata_o),
+		.mem_wd_i(mem_wd_o),
+		.mem_wreg_i(mem_wreg_o),
+		.ex_wdata_i(ex_wdata_o),
+		.ex_wd_i(ex_wd_o),
+		.ex_wreg_i(ex_wreg_o),
+		
 		// 来自REGFILE的数据输�?
 		.reg1_read_o(reg1_read),
 		.reg2_read_o(reg2_read), 	  
@@ -163,7 +181,6 @@ module mainmips(
 	  
 		// 送到ID/EX模块的数�?
 		.aluop_o(id_aluop_o),
-//		.alusel_o(id_alusel_o),
 		.reg1_o(id_reg1_o),
 		.reg2_o(id_reg2_o),
 		.wd_o(id_wd_o),
@@ -228,11 +245,10 @@ module mainmips(
 		.wreg_i(ex_wreg_i),
 		.mem_ce_i(ex_mem_ce_i),
 		.mem_we_i(ex_mem_we_i),
-	  
 	  // EX阶段的结果，输出到EX/MEM的数�?
-		.wd_o(ex_wd_o),
-		.wreg_o(ex_wreg_o),
-		.wdata_o(ex_wdata_o),
+		.wd_o(ex_wd_o  ),
+		.wreg_o(ex_wreg_o ),
+		.wdata_o(ex_wdata_o ),
 		.stallreq(stallreq_ex),
 		.mem_ce_o(ex_mem_ce_o),
 		.mem_we_o(ex_mem_we_o),
@@ -277,16 +293,18 @@ module mainmips(
 		
 	    //接受数据存储器的数据
 	    .mem_read_data(ram_data_i),
+		
+		//送到ID模块的数�?
 	  
-	  //送到数据存储�?
+	    //送到数据存储�?
         .mem_ce_o(ram_ce_o),
         .mem_we_o(ram_we_o),
         .mem_addr_o(ram_addr_o),	  
 	    .mem_data_o(ram_data_o),
 	  
 		// 要�?�到MEM/WB模块的数�?
-		.wd_o(mem_wd_o),
-		.wreg_o(mem_wreg_o),
+		.wd_o(mem_wd_o ),
+		.wreg_o(mem_wreg_o ),
 		.wdata_o(mem_wdata_o)
 	);
 

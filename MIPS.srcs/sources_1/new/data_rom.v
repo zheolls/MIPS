@@ -24,13 +24,19 @@ module data_ram(
     input wire clk,
     input wire ce,
     input wire we,
+    input wire[`RegBus]       device_i,
+	output reg[`RegBus]       device_o, 
     input wire[`DataAddrBus] addr,
     input wire[`DataBus] data_i,
     output reg[`DataBus] data_o
     );
     reg[`ByteWidth] data_mem[0:`DataMemNum-1];
+    initial begin
+        data_mem[128]<= 100;
+    end
     //Ð´²Ù×÷
     always @ (posedge clk) begin
+        
         if (ce==`ChipDisable) begin
             data_o<=`ZeroWord;
         end else if (we==`WriteEnable) begin
