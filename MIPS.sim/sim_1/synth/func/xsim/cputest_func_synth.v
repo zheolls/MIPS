@@ -1,7 +1,7 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.3 (win64) Build 2405991 Thu Dec  6 23:38:27 MST 2018
-// Date        : Sun Apr 14 21:28:13 2019
+// Date        : Tue Apr 23 14:09:46 2019
 // Host        : Surface-Pro running 64-bit major release  (build 9200)
 // Command     : write_verilog -mode funcsim -nolib -force -file
 //               C:/Users/zhusa/MIPS/MIPS.sim/sim_1/synth/func/xsim/cputest_func_synth.v

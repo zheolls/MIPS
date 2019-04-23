@@ -31,15 +31,15 @@ module data_ram(
     output reg[`DataBus] data_o
     );
     reg[`ByteWidth] data_mem[0:`DataMemNum-1];
-    initial begin
-        data_mem[128]<= 100;
-    end
+
     //Ð´²Ù×÷
     always @ (posedge clk) begin
         
         if (ce==`ChipDisable) begin
             data_o<=`ZeroWord;
-        end else if (we==`WriteEnable) begin
+        end else if (we==`WriteEnable && addr[`DataMemNumLog2-1:0] == 8'b10000010) begin
+			device_o <=data_i;
+		end else if (we==`WriteEnable)begin
             data_mem[addr[`DataMemNumLog2-1:0]]<=data_i;
         end
     end
@@ -48,7 +48,9 @@ module data_ram(
     always @ (*) begin
         if (ce==`ChipDisable) begin
             data_o<=`ZeroWord;
-        end else if (we==`WriteDisable) begin
+        end else if (we==`WriteDisable && addr[`DataMemNumLog2-1:0] == 8'b10000000) begin
+			data_o<=device_i;
+		end else if (we==`WriteDisable)begin
             data_o<=data_mem[addr[`DataMemNumLog2-1:0]];
         end else begin
             data_o<=`ZeroWord;

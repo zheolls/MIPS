@@ -26,7 +26,7 @@ module id_ex(
     
     input wire[5:0]               stall,
 	
-	// 从ID阶段传�?�过来的信息
+
 	input wire[`AluOpBus]         id_aluop,
 	input wire[`RegBus]           id_reg1,
 	input wire[`RegBus]           id_reg2,
@@ -35,7 +35,7 @@ module id_ex(
 	input wire                    id_mem_ce,
 	input wire                    id_mem_we,
 	
-	// �?要传递到EX阶段的信�?
+
 	output reg[`AluOpBus]         ex_aluop,
 	output reg[`RegBus]           ex_reg1,
 	output reg[`RegBus]           ex_reg2,
@@ -44,7 +44,7 @@ module id_ex(
 	output reg                    ex_mem_ce,
 	output reg                    ex_mem_we
     );
-        // 如果重置的话，进行以下操作清空信�?
+
 	always @ (posedge clk) begin
 		if (rst == `RstEnable) begin
 			ex_aluop <= `EXE_NOP_OP;
@@ -54,7 +54,7 @@ module id_ex(
 			ex_wreg <= `WriteDisable;
 			ex_mem_ce <= `ChipDisable;
 			ex_mem_we <= `WriteDisable;
-            // 如果不重置的话，把ID阶段的结果�?�到EX阶段
+
 		end else if (stall[2] == `Stop && stall[3] == `NoStop ) begin		
 		    ex_aluop <= `EXE_NOP_OP;
 			ex_reg1 <= `ZeroWord;

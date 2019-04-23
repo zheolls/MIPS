@@ -22,15 +22,15 @@
 
 module mips_top(
     input wire clk,
-    input wire rst
+    input wire rst,
+	input wire[`RegBus] device_i,
+	output wire[`RegBus] device_o
     );
-    //连接指令存储�?
     wire[`InstAddrBus]  inst_addr;
     wire[`InstBus]      inst;
     wire                rom_ce;
     
     
-    //连接数据储存�?
     wire[`DataAddrBus] data_addr;
     wire[`DataBus]     ram_data;
     wire ram_we;
@@ -65,7 +65,9 @@ module mips_top(
         .data_i(ram_data),
         .we(ram_we),
         .ce(ram_ce),
-        .data_o(data)
+        .data_o(data),
+		.device_i(device_i),
+		.device_o(device_o)
     );
     
 endmodule

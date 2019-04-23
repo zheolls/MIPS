@@ -29,7 +29,7 @@ module pc_reg(
     output reg[`InstAddrBus] pc,
     output reg ce
     );
-        // 指令存储器禁用的时�?? PC值需要归�?
+
 	always @ (posedge clk) begin
         if (ce == `ChipDisable) begin
 			pc <= `ZeroWord;
